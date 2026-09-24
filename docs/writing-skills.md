@@ -186,6 +186,7 @@ Pinned to mattpocock/skills `c55ee46` (2026-09-18). To update one, diff its dire
 | --- | --- |
 | `writing-for-agents` | Our own `SKILL-MECHANICS.md` |
 | `grilling` | None |
+| `diagnosing-bugs` | Narrower description: fires on hard bugs, not on every report of something broken ([upstream #578](https://github.com/mattpocock/skills/issues/578)). A missing seam is handed to `codebase-design`, not to a "next phase" upstream never defines. No `agents/openai.yaml` |
 | `domain-modeling` | Writes to an existing glossary or ADR location instead of creating `docs/adr/` next to it |
 | `codebase-design` | Drops the deep/shallow diagrams, the Relationships list, and `DEEPENING.md`'s seam discipline (each restates the glossary or a principle), keeping that section's two specifics as clauses in `SKILL.md`. `DESIGN-IT-TWICE.md` dispatches `design-explorer`, one run per constraint, with a general-subagent fallback |
 | `tdd` | Keeps REFACTOR (no `code-review` skill here). Narrower description. Red excludes compile errors, a bug starts red, green means every test and lint rule is live, a seam named in the ticket counts as agreed. A seam is "where a module's interface lives", not a "boundary" |
