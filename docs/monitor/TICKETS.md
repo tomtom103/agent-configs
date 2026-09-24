@@ -34,7 +34,7 @@ commands, shortened `limits`, and a recording `deliver`. `bun run check` in `ope
   - Live trial: interrupting the turn (Esc) leaves the monitor running, and its next notification wakes the session
   - Live trial: with `{ action: "shell", resource: "*", effect: "deny" }`, `monitor` isn't offered to the agent
 
-## [ ] T2: Report the command's exit
+## [x] T2: Report the command's exit
 
 - **Blocked by:** T1
 - **Seam:** `opencode/plugins/monitor/monitors.test.ts`

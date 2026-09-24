@@ -12,7 +12,7 @@ agent keeps working.
 _Avoid_: task, watch (as a noun)
 
 **Event**:
-One line a monitor's command prints to stdout.
+One non-blank line a monitor's command prints to stdout.
 _Avoid_: log line, output
 
 **Notification**:

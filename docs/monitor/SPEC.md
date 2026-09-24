@@ -27,7 +27,7 @@ From `CONTEXT.md`:
 
 - **Monitor:** a background shell command, started by the agent and identified by an ID, whose stdout reaches the
   session while the agent keeps working.
-- **Event:** one line a monitor's command prints to stdout.
+- **Event:** one non-blank line a monitor's command prints to stdout.
 - **Notification:** the events from one 200 ms window, delivered to the monitor's session as a single message.
 - **Deadline:** the point at which a monitor ends on its own, if its command hasn't exited and nobody stopped it first.
 - **Re-arm:** starting a monitor again with the same command after its deadline.

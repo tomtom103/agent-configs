@@ -6,7 +6,7 @@ import { createMonitors } from "./monitors.ts"
 // opencode lets the agent read its tool-output directory without an external-directory prompt.
 const toolOutputDir = join(process.env.XDG_DATA_HOME || join(homedir(), ".local", "share"), "opencode", "tool-output")
 
-const description = `Start a monitor: a shell command that runs in the background, in this session's directory, while you keep working. Every line it prints to stdout is an event, and events reach you as notifications without you having to poll. The first event opens a 200 ms window, and every event printed within it arrives in one notification headed "[monitor <id>: <description>]". The call returns at once with the monitor's ID.
+const description = `Start a monitor: a shell command that runs in the background, in this session's directory, while you keep working. Every non-blank line it prints to stdout is an event, and events reach you as notifications without you having to poll. The first event opens a 200 ms window, and every event printed within it arrives in one notification headed "[monitor <id>: <description>]". When the command exits, a last notification gives its exit code, and the monitor ends. The call returns at once with the monitor's ID.
 
 Every notification takes your attention, so filter the command's output down to the lines you would act on, for example \`tail -f server.log | grep --line-buffered -E 'ERROR|Listening on'\`. Use \`grep --line-buffered\` in pipelines: without it, grep holds its output back and events arrive late or in lumps.
 

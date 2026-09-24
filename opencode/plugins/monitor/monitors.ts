@@ -54,16 +54,26 @@ export function createMonitors(options: {
 
       let pending: string[] = []
       let window: ReturnType<typeof setTimeout> | undefined
+      const send = (lines: string[]) =>
+        void options.deliver({ sessionID, description: header, text: [header, ...lines].join("\n") })
       const flush = () => {
         window = undefined
         const events = pending
         pending = []
-        void options.deliver({ sessionID, description: header, text: [header, ...events].join("\n") })
+        send(events)
       }
-      void readLines(child.stdout, (event) => {
-        pending.push(event)
-        window ??= setTimeout(flush, limits.batchMs)
-      })
+      const end = (reason: string) => {
+        clearTimeout(window)
+        send([...pending, reason])
+      }
+      // Output can still arrive between the exit and the end of stdout, so the final notification waits for both.
+      void Promise.all([
+        readEvents(child.stdout, (event) => {
+          pending.push(event)
+          window ??= setTimeout(flush, limits.batchMs)
+        }),
+        child.exited,
+      ]).then(() => end(exitReason(child)))
 
       return { id, deadlineMs, stderrPath }
     },
@@ -80,12 +90,22 @@ function spawnInOwnGroup(command: string, cwd: string, stderrPath: string) {
   }
 }
 
-async function readLines(stream: ReadableStream<Uint8Array>, onLine: (line: string) => void) {
+function exitReason(child: { exitCode: number | null; signalCode: string | null }) {
+  const how = child.signalCode ? `was killed by ${child.signalCode}` : `exited with code ${child.exitCode}`
+  return `The command ${how}. The monitor has ended.`
+}
+
+// A blank line tells the agent nothing, so it isn't an event.
+async function readEvents(stream: ReadableStream<Uint8Array>, onEvent: (event: string) => void) {
   const decoder = new TextDecoder()
   let partial = ""
+  const emit = (line: string) => {
+    if (line.trim() !== "") onEvent(line)
+  }
   for await (const chunk of stream) {
     const lines = (partial + decoder.decode(chunk, { stream: true })).split("\n")
     partial = lines.pop() ?? ""
-    lines.forEach((line) => onLine(line))
+    lines.forEach(emit)
   }
+  emit(partial + decoder.decode())
 }
