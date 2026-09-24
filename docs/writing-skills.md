@@ -61,6 +61,8 @@ model wouldn't produce on its own, such as ten ways to build a feedback loop, in
 - Give examples as the words the agent should say, and give a default for ambiguous cases ("…and state the
   assumption").
 - Say which things are facts, which the agent looks up, and which are decisions, which it puts to the user.
+- When steps need no judgement between them, say to run them as one script. That works whether the harness exposes
+  tools as code (opencode's Code Mode) or only through a shell, and the agent reads the result instead of every step.
 - Don't restate what the environment already says (`package.json`, `--help`, the directory layout). Write down
   what can't be found by looking: an unwritten convention, the reason behind a choice, a gotcha.
 
@@ -193,7 +195,9 @@ Pinned to mattpocock/skills `c55ee46` (2026-09-18). To update one, diff its dire
 ## Next
 
 Run `browser-verify` on a real task, then decide whether "close the tabs you opened" and "wait on conditions" change
-the agent's behaviour. Every change goes through `/review-skill`, a trial run, and a commit with a revision note.
+the agent's behaviour. Run it under opencode too, where Code Mode wraps the Playwright server, and check whether the
+agent batches its steps into one script or still makes one call per step. Every change goes through `/review-skill`, a
+trial run, and a commit with a revision note.
 
 ## Settled disagreements
 

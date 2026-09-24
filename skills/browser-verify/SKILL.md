@@ -25,6 +25,9 @@ Find out which one you have before acting, and treat the user's own browser with
 4. **Check the console and network** for errors after the page loads and after each key interaction.
    An empty page with a console error is a failure, even if the test you targeted passed.
 5. **Wait on conditions, not time:** wait for an element, text, or URL to appear rather than sleeping.
+6. **Batch steps that need no judgement between them.** If the automation can run code, do the
+   navigate, act, wait, and read steps as one script and return only the evidence you'll report. Each separate
+   call puts a whole page snapshot in your context.
 
 ## Stop and Ask
 

@@ -5,7 +5,8 @@ set -eu
 
 SPEC_KEYS="name description license compatibility metadata allowed-tools"
 # Tool names only one harness provides. They may appear under claude/ and opencode/, nowhere else.
-HARNESS_TOOLS='WebFetch|WebSearch|TodoWrite|NotebookEdit|AskUserQuestion|run_in_background|mcp__'
+# `tools.<server>_<tool>` is how opencode's Code Mode names an MCP tool.
+HARNESS_TOOLS='WebFetch|WebSearch|TodoWrite|NotebookEdit|AskUserQuestion|run_in_background|mcp__|tools\.[a-z0-9_-]+_[a-z]'
 MAX_SKILL_LINES=150
 
 REPO_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
