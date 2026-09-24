@@ -167,6 +167,10 @@ Invariants:
 - for a session with a `parentID`, calls `ctx.session.wait` once and then `stopSession`
 - returns a cleanup function that calls `stopAll`
 
+opencode never installs a local plugin's dependencies, and `@opencode/plugin` doesn't resolve from the plugins folder,
+so the plugin imports its types with `import type` only. opencode reads a plugin folder's entry point from its
+`package.json`, so that file has to name `index.ts` as the entry. The first ticket confirms which field opencode reads.
+
 ## 6. 3-Tier Boundaries
 
 - **Always Do:** start every notification with `[monitor <id>: <description>]`. Give every monitor a deadline. Kill the
