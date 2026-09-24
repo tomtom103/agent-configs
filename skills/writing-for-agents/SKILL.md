@@ -1,7 +1,7 @@
 ---
 name: writing-for-agents
 description: Writing documents for agents. Use when creating or editing skills, or modifying AGENTS.md or CLAUDE.md.
-license: MIT. LICENSE has the upstream copyright notice.
+license: MIT
 metadata:
   source: https://github.com/mattpocock/skills/tree/c55ee46073ed923f86ce59a5eb3b6d895095d1b7/skills/productivity/writing-for-agents
   source-commit: c55ee46073ed923f86ce59a5eb3b6d895095d1b7

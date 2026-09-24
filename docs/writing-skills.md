@@ -6,10 +6,9 @@ Their disagreements are settled at the end of this file.
 
 ## Decisions
 
-1. **The style reference is vendored, not rewritten.** Copy `writing-for-agents` from mattpocock/skills into
-   `skills/writing-for-agents/`, unchanged and pinned to a commit. Replace only its `SKILL-MECHANICS.md` with one that
-   describes this repo's mechanics. A house digest of it would be a second copy of a source we don't control, and
-   copies drift. Drift is the main problem this document diagnoses.
+1. **The style reference is vendored, not rewritten.** `skills/writing-for-agents/` is upstream's, unchanged and
+   pinned to a commit, except for `SKILL-MECHANICS.md`, which describes this repo's mechanics. A house digest would be
+   a second copy of a source we don't control, and copies drift. Drift is the main problem this document diagnoses.
 2. **The style is applied through a command.** `/review-skill` runs the reference as an ordered review, ending on a
    done-condition, and prints its result as a revision note.
 3. **Revision notes are the examples.** Every commit that touches a skill, command, or agent explains itself as
@@ -18,7 +17,8 @@ Their disagreements are settled at the end of this file.
 4. **Mechanical rules go in a lint script**, so reviews are spent on judgement calls.
 5. **A skill is done when it has passed review and run once on a real task**, with the trace read for where the agent
    went off course. Skills that matter get `skill-creator` evals.
-6. **Rewrite commands and agents first**, then the skills, in the order under [Rollout](#rollout).
+6. **Copies of upstream are pinned.** A skill taken from upstream records its source commit and ships upstream's
+   license, and each departure is explained in a revision note, so the next upstream diff starts from known ground.
 
 ## What makes a good skill
 
@@ -88,8 +88,7 @@ this repo:
 ### 1. `writing-for-agents`, vendored
 
 [`skills/writing-for-agents/SKILL.md`](../skills/writing-for-agents/SKILL.md) is upstream's file with the body
-unchanged. Its `metadata` records the source URL and commit (`c55ee46`, 2026-09-18). To update it, diff against
-upstream and pull the change into that one directory.
+unchanged, pinned like every copy of upstream (see [Upstream copies](#upstream-copies)).
 
 Upstream's `SKILL-MECHANICS.md` is replaced by [ours](../skills/writing-for-agents/SKILL-MECHANICS.md). The vendored
 file promises that its mechanics file covers frontmatter, the invocation choice, and routers. Ours covers those for
@@ -125,11 +124,7 @@ commit body. AGENTS.md is loaded only when working in this repo, so the rule cos
 
 ### 4. `scripts/lint-skills.sh`
 
-[The script](../scripts/lint-skills.sh) checks skill frontmatter against the spec, keeps shared commands to
-`description`, requires each agent's two copies to share one body, and catches harness tool names outside `claude/` and
-`opencode/`, unquoted `: ` in frontmatter values (invalid YAML), broken relative links, and escaped code fences. A
-`SKILL.md` over 150 lines gets a warning, not an error.
-The script itself is the full list of checks.
+[The script](../scripts/lint-skills.sh) holds every rule that can be checked mechanically; it is the full list.
 
 When the same review comment comes up twice, ask whether the rule behind it is mechanical. If it is, turn it into a
 lint check instead of adding another sentence of guidance.
@@ -167,9 +162,9 @@ two harnesses.
 After:
 
 ```md
-Implement the task you are given, test-first. Call the skill tool with "tdd" and follow it. When the shape of
-an interface is in question, call it with "codebase-design" too. Finish by reporting what changed and the
-command whose output proves it.
+Implement the ticket or change you're given, test-first: call the skill tool with "tdd" and follow it. When the shape
+of an interface is in question, call it with "codebase-design" too. If the change shows up in a browser, call it with
+"browser-verify" and check it there.
 ```
 
 Failure modes: persona (a no-op), duplication, and harness tool names.
@@ -180,41 +175,25 @@ After: deleted. The RED step already carries the rule, and quoting the temptatio
 this only when a trace shows the agent making that exact argument, and even then write it as the target behaviour plus
 the reason.
 
-## Rollout
+## Upstream copies
 
-1. **Infrastructure.** Done: the vendored reference with our `SKILL-MECHANICS.md`, `/review-skill`,
-   `scripts/lint-skills.sh`, the AGENTS.md rules, and a baseline commit.
-2. **Commands, agents, and the workflow's vocabulary.** Done, in one change so the chain worked at every commit.
-   - The commands are thin callers of skills, which removed the extra copies of the TDD loop, the plan template, the
-     spec outline, and the question cap.
-   - The workflow says *ticket* throughout and keeps one plan file, `TICKETS.md`, beside the spec. `/build` works
-     through it one ticket at a time and ticks each off.
-   - Each agent pair shares one body that calls skills and names no harness tool. The descriptions say when to delegate.
-     `craftsman` and `/build` call `browser-verify`, and `codebase-researcher` and `design-explorer` call
-     `codebase-design`.
-   - Skills end on their own completion criterion. Routing to the next step lives only in the commands, since a skill
-     running inside an agent has no command to route to.
-3. **`codebase-design`.** Done. The glossary, the `_Avoid_` lists, and "Use these terms exactly" are restored from
-   upstream, and the exposition is cut. `DESIGN-IT-TWICE.md` sends out one `design-explorer` run per constraint, in
-   parallel, and leaves the shape of each design to the agent.
-4. **`grilling`, `tdd`, `domain-modeling`.** Done. `grilling` is upstream's, question cap gone. `domain-modeling`
-   and its two format files are upstream's too, which fixed the escaped fences in `ADR-FORMAT.md`. `tdd` gets back
-   upstream's `tests.md` and `mocking.md`. Four departures from upstream:
-   - `tdd` keeps REFACTOR, as a rule of the loop. Upstream moved it into a `code-review` skill, which this repo doesn't
-     have.
-   - `tdd`'s description narrows to test-first work, red-green-refactor, and bugs reproduced as a failing test.
-     `/build` and `craftsman` call it directly, so the broad trigger only made it fire where nobody asked for test-first.
-   - `tdd` keeps three rules from our version, in positive form: red means the behaviour is missing (not a compile
-     error), a bug's first test reproduces the reported symptom, and green means every test and lint rule is live. A seam
-     named in the ticket counts as agreed, so `/build` doesn't stop to reconfirm it.
-   - `domain-modeling` writes to the project's existing glossary or ADR location when it has one, instead of creating
-     `docs/adr/` next to it.
-5. **Frontmatter.** Done. `pack` and `attribution` sit under `metadata`, and `references` is gone, since each body
-   already links its sibling files.
-6. **`browser-verify`:** run it on a real task, then decide whether "close the tabs you opened" and "wait on conditions"
-   change the agent's behaviour.
+Pinned to mattpocock/skills `c55ee46` (2026-09-18). To update one, diff its directory against upstream, then read
+`git log` on it for the departures to keep.
 
-Each rewrite goes through `/review-skill`, one trial run, and a commit with a revision note.
+| Skill | Departures |
+| --- | --- |
+| `writing-for-agents` | Our own `SKILL-MECHANICS.md` |
+| `grilling` | None |
+| `domain-modeling` | Writes to an existing glossary or ADR location instead of creating `docs/adr/` next to it |
+| `codebase-design` | Drops the deep/shallow diagrams, the Relationships list, and `DEEPENING.md`'s seam discipline (each restates the glossary or a principle), keeping that section's two specifics as clauses in `SKILL.md`. `DESIGN-IT-TWICE.md` dispatches `design-explorer`, one run per constraint, with a general-subagent fallback |
+| `tdd` | Keeps REFACTOR (no `code-review` skill here). Narrower description. Red excludes compile errors, a bug starts red, green means every test and lint rule is live, a seam named in the ticket counts as agreed. A seam is "where a module's interface lives", not a "boundary" |
+
+`to-spec` and `to-tickets` borrow ideas rather than text, so they carry an attribution only.
+
+## Next
+
+Run `browser-verify` on a real task, then decide whether "close the tabs you opened" and "wait on conditions" change
+the agent's behaviour. Every change goes through `/review-skill`, a trial run, and a commit with a revision note.
 
 ## Settled disagreements
 

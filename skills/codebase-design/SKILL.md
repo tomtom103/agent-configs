@@ -5,6 +5,8 @@ license: MIT
 metadata:
   pack: core
   attribution: Adapted from mattpocock/skills (MIT License)
+  source: https://github.com/mattpocock/skills/tree/c55ee46073ed923f86ce59a5eb3b6d895095d1b7/skills/engineering/codebase-design
+  source-commit: c55ee46073ed923f86ce59a5eb3b6d895095d1b7
 ---
 
 # Codebase Design

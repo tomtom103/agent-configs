@@ -9,6 +9,11 @@ A skill's frontmatter holds only the [Agent Skills spec](https://agentskills.io/
 (equal to the directory name), `description`, and optionally `license`, `compatibility`, `metadata`, and
 `allowed-tools`. Anything else (attribution, an upstream source) goes under `metadata` as a string value.
 
+A skill whose files are copied from upstream records `source` (the upstream directory) and `source-commit` (the commit
+it was compared against) under `metadata`, and ships upstream's `LICENSE` beside `SKILL.md`. Each departure from
+upstream is explained in the revision note of the commit that makes it, so `git log` on the skill lists them all. A
+skill that only borrows ideas carries an `attribution` and nothing else.
+
 ## Invocation
 
 Three layers, each paying a different load:

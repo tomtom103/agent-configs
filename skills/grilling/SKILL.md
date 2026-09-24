@@ -5,6 +5,8 @@ license: MIT
 metadata:
   pack: core
   attribution: Adapted from mattpocock/skills (MIT License)
+  source: https://github.com/mattpocock/skills/tree/c55ee46073ed923f86ce59a5eb3b6d895095d1b7/skills/productivity/grilling
+  source-commit: c55ee46073ed923f86ce59a5eb3b6d895095d1b7
 ---
 
 Interview the user relentlessly until you reach a shared understanding. Map this as a **design tree**: every decision branches into the decisions that hang off it.
