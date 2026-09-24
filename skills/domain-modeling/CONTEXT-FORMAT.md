@@ -1,32 +1,60 @@
 # CONTEXT.md Format
 
-A project glossary establishing ubiquitous language for the bounded context.
-
 ## Structure
 
-```markdown
+```md
 # {Context Name}
 
-{One or two sentence description of what this bounded context is and why it exists.}
+{One or two sentence description of what this context is and why it exists.}
 
-## Ubiquitous Language
+## Language
 
 **Order**:
-A customer request to purchase goods, created at checkout and tracked through fulfillment.
-_Avoid_: Purchase, Transaction, Cart.
+{A one or two sentence description of the term}
+_Avoid_: Purchase, transaction
 
 **Invoice**:
-A formal request for payment issued to a customer with payment terms and due dates.
-_Avoid_: Bill, Receipt.
+A request for payment sent to a customer after delivery.
+_Avoid_: Bill, payment request
 
 **Customer**:
-A person or legal entity holding an active account that places orders.
-_Avoid_: User, Client, Buyer.
+A person or organization that places orders.
+_Avoid_: Client, buyer, account
 ```
 
 ## Rules
 
-- **Be Opinionated:** When multiple words exist for the same concept, designate the canonical term and list confusing alternatives under `_Avoid_`.
-- **Keep Definitions Tight:** 1 to 2 sentences max. Define what the concept IS, not how it is implemented in code.
-- **Domain Concepts Only:** General programming concepts (buffers, queues, retries, JSON schemas) do NOT belong here unless they are domain entities within the system.
-- **No Implementation Artifacts:** Do not put task lists, scratchpads, or pseudo-code in `CONTEXT.md`.
+- **Be opinionated.** When multiple words exist for the same concept, pick the best one and list the others under `_Avoid_`.
+- **Keep definitions tight.** One or two sentences max. Define what it IS, not what it does.
+- **Only include terms specific to this project's context.** General programming concepts (timeouts, error types, utility patterns) don't belong even if the project uses them extensively. Before adding a term, ask: is this a concept unique to this context, or a general programming concept? Only the former belongs.
+- **Group terms under subheadings** when natural clusters emerge. If all terms belong to a single cohesive area, a flat list is fine.
+
+## Single vs multi-context repos
+
+**Single context (most repos):** One `CONTEXT.md` at the repo root.
+
+**Multiple contexts:** A `CONTEXT-MAP.md` at the repo root lists the contexts, where they live, and how they relate to each other:
+
+```md
+# Context Map
+
+## Contexts
+
+- [Ordering](./src/ordering/CONTEXT.md): receives and tracks customer orders
+- [Billing](./src/billing/CONTEXT.md): generates invoices and processes payments
+- [Fulfillment](./src/fulfillment/CONTEXT.md): manages warehouse picking and shipping
+
+## Relationships
+
+- **Ordering → Fulfillment**: Ordering emits `OrderPlaced` events; Fulfillment consumes them to start picking
+- **Fulfillment → Billing**: Fulfillment emits `ShipmentDispatched` events; Billing consumes them to generate invoices
+- **Ordering ↔ Billing**: Shared types for `CustomerId` and `Money`
+```
+
+The skill infers which structure applies:
+
+- If `CONTEXT-MAP.md` exists, read it to find contexts
+- If only a root `CONTEXT.md` exists, single context
+- If neither exists, create a root `CONTEXT.md` lazily when the first term is resolved
+
+When multiple contexts exist, infer which one the current topic relates to. If unclear, ask.

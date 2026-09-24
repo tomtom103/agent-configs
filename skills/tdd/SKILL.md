@@ -1,87 +1,42 @@
 ---
 name: tdd
-description: Test-driven development loop enforcing public seam tests before implementation. Use when writing new features, modifying business logic, fixing bugs (Prove-It pattern), or refactoring behavior. Do not use for pure visual CSS tweaks, declarative configuration, or disposable spikes.
-pack: core
+description: Test-driven development with a red-green-refactor loop. Use when the user wants to build a feature or fix a bug test-first, mentions TDD or red-green-refactor, or wants a bug reproduced as a failing test before it's fixed.
 license: MIT
-attribution: Adapted from mattpocock/skills & addyosmani/agent-skills (MIT License)
+metadata:
+  pack: core
+  attribution: Adapted from mattpocock/skills & addyosmani/agent-skills (MIT License)
 ---
 
-# Test-Driven Development (TDD)
+# Test-Driven Development
 
-TDD ensures that every behavior change is proven by an automated verification loop before production code is written or modified.
+TDD is the red → green → refactor loop. This skill is the reference that makes that loop produce tests worth keeping: what a good test is, where tests go, the anti-patterns, and the rules of the loop. Every section applies on every cycle: consult them before and during the loop, not after.
 
-## When to Use
+When exploring the codebase, read `CONTEXT.md` (if it exists) so test names and interface vocabulary match the project's domain language, and respect ADRs in the area you're touching.
 
-- Implementing new domain logic, algorithms, services, or interfaces.
-- Fixing reported bugs or defects (The **Prove-It** pattern).
-- Refactoring complex subsystems (establishing an automated safety net first).
+## What a good test is
 
-## When NOT to Use
+Tests verify behavior through public interfaces, not implementation details. Code can change entirely; tests shouldn't. A good test reads like a specification: "user can checkout with valid cart" tells you exactly what capability exists, and it survives refactors because it doesn't care about internal structure.
 
-- Declarative configuration files or pure wiring where compiler/typechecker static checks provide the oracle.
-- Pure visual styling where automated visual regression testing is not configured.
-- Throwaway exploratory spikes explicitly marked as disposable.
+See [tests.md](tests.md) for examples and [mocking.md](mocking.md) for mocking guidelines.
 
----
+## Seams: where tests go
 
-## The Core Loop
+A **seam** is the public boundary you test at: the interface where you observe behavior without reaching inside. Tests live at seams, never against internals.
 
-```
-┌──────────────────┐       ┌──────────────────┐       ┌──────────────────┐
-│     1. RED       │ ────► │    2. GREEN      │ ────► │   3. REFACTOR    │
-│ Failing test at  │       │ Minimal code to  │       │ Clean code with  │
-│   public seam    │       │    pass clean    │       │   green safety   │
-└──────────────────┘       └──────────────────┘       └──────────────────┘
-```
+**Test only at agreed seams.** A seam named in the ticket or spec is already agreed. Otherwise, write down the seams under test and confirm them with the user before writing any test. You can't test everything, so agreeing the seams up front is how testing effort lands on the critical paths and complex logic instead of every edge case.
 
-### 1. Identify the Public Seam
+When the shape of that interface is itself in question (how deep the module is, where the seam belongs, what the interface should expose), call the skill tool with "codebase-design" for the vocabulary.
 
-- **Test at the boundary:** Test through the public interface of the module or service, not through internal private helper functions.
-- **Why:** Testing internals makes tests brittle when implementation details change. Testing public seams allows you to refactor internals freely without breaking tests.
+## Anti-patterns
 
-### 2. RED (Write Failing Test First)
+- **Implementation-coupled**: mocks internal collaborators, tests private methods, or verifies through a side channel (querying the database instead of using the interface). The tell: the test breaks when you refactor but behavior hasn't changed.
+- **Tautological**: the assertion recomputes the expected value the way the code does (`expect(add(a, b)).toBe(a + b)`, a snapshot derived by hand the same way, a constant asserted equal to itself), so it passes by construction and can never disagree with the code. Expected values must come from an independent source of truth: a known-good literal, a worked example, the spec.
+- **Horizontal slicing**: writing all tests first, then all implementation. Bulk tests verify _imagined_ behavior: you test the _shape_ of things rather than user-facing behavior, the tests go insensitive to real changes, and you commit to test structure before understanding the implementation. Work in **vertical slices** instead: one test → one implementation → repeat, each test a **tracer bullet** that responds to what the last cycle taught you.
 
-- Write the test assertion before touching any implementation file.
-- **Independent Test Oracle:** Never construct the expected test value using the same logic as the system under test (tautological tests). Use hardcoded, independently calculated fixtures.
-- Run the test suite: **verify that it fails for the expected reason** (not due to a compilation/syntax error, but because the capability is missing).
-- _The Prove-It Pattern for Bugs:_ When fixing a defect, the test MUST fail identically to the reported bug before you touch production code. If the test passes before your fix, you haven't reproduced the bug.
+## Rules of the loop
 
-### 3. GREEN (Minimal Implementation)
-
-- Write the minimal production code necessary to turn the test green.
-- Do not write speculative code or add premature abstractions for unstated requirements.
-- Never introduce error suppressions (`@ts-ignore`, `eslint-disable`, `# noqa`) or test skips (`.skip`) to achieve green status.
-
-### 4. REFACTOR (Clean While Green)
-
-- Refactoring is a first-class phase that takes place **only when all tests are green**.
-- Eliminate duplication, simplify naming, and extract cohesive helpers while the automated test net is holding.
-- Re-run the test suite after each atomic refactoring step to verify no regressions were introduced.
-
----
-
-## Test Quality & Mocking Rules
-
-- **The Beyoncé Rule:** _"If you liked it, then you should have put a test on it."_ Any observable behavior that matters to callers or business requirements must have an automated assertion.
-- **DAMP over DRY:** Prefer Descriptive And Meaningful Phrases in tests over aggressive helper abstraction. Tests should read clearly top-to-bottom without navigating three layers of shared test fixtures.
-- **Mocking Boundaries:** Mock only external out-of-process boundaries (third-party payment APIs, external HTTP services). Never mock the system under test or internal domain entities.
-
----
-
-## Common Rationalizations
-
-| Rationalization                                | Reality                                                                                       |
-| :--------------------------------------------- | :-------------------------------------------------------------------------------------------- |
-| _"This is too simple to test."_                | Simple code breaks when touched by future refactors. Write the test.                          |
-| _"I will write the tests after implementing."_ | Tests written after code test what was built, not what was specified. They almost never fail. |
-| _"Existing code does not have tests."_         | New code sets the new standard. Do not propagate technical debt.                              |
-| _"TDD slows down velocity."_                   | Debugging in production is 10x slower. TDD accelerates overall delivery velocity.             |
-
----
-
-## Verification Checklist
-
-1. [ ] You observed the test fail first (Red).
-2. [ ] The failure reason matched the missing capability or bug symptom.
-3. [ ] You observed the test pass after minimal implementation (Green).
-4. [ ] All existing regression tests continue to pass.
+- **Red before green.** Write the failing test first, then only enough code to pass it. Don't anticipate future tests or add speculative features. Red counts only when the test fails because the behavior is missing; a test that fails to compile hasn't gone red yet.
+- **A bug starts red.** The first test reproduces the symptom the user reported, and goes red for that reason, before you touch the fix. A test that passes before the fix hasn't reproduced the bug.
+- **Green is the whole suite passing** with every test running and every error and lint rule live.
+- **One slice at a time.** One seam, one test, one minimal implementation per cycle.
+- **Refactor on green.** Remove duplication, deepen shallow modules, move logic to the module whose data it uses, and fix code the new code shows up as awkward. Run the tests after each step, so every refactor starts and ends green.

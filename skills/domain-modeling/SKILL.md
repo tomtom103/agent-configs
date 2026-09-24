@@ -1,102 +1,78 @@
 ---
 name: domain-modeling
-description: Builds and sharpens a project's domain model and ubiquitous language. Use when establishing codebase terminology, writing or editing CONTEXT.md, defining entities, or recording Architecture Decision Records (ADRs).
-pack: core
+description: Build and sharpen a project's domain model. Use when discussing codebase terminology, writing or editing a CONTEXT.md, or recording or editing an ADR.
 license: MIT
-attribution: Adapted from mattpocock/skills (MIT License)
-references:
-  - CONTEXT-FORMAT.md
-  - ADR-FORMAT.md
+metadata:
+  pack: core
+  attribution: Adapted from mattpocock/skills (MIT License)
 ---
 
 # Domain Modeling
 
-Actively build and sharpen the project's domain model as you design and implement. This is an active discipline: challenging ambiguous terms, discovering edge cases, and recording the glossary and decisions the moment they crystallize.
+Actively build and sharpen the project's domain model as you design. This is the *active* discipline: challenging terms, inventing edge-case scenarios, and writing the glossary and decisions down the moment they crystallise. (Merely *reading* `CONTEXT.md` for vocabulary is not this skill: that's a one-line habit any skill can do. This skill is for when you're changing the model, not just consuming it.)
 
-## When to Use
+## File structure
 
-- Defining new entities, services, APIs, or data models.
-- Resolving ambiguous or conflicting terminology used by stakeholders or in code.
-- Capturing ubiquitous language in `CONTEXT.md` (or existing project glossary).
-- Making consequential, hard-to-reverse architectural decisions that warrant an ADR.
-
-## When NOT to Use
-
-- Routine bug fixes or mechanical refactoring where domain concepts do not change.
-- Storing task lists, implementation steps, or temporary notes (use specs and task plans instead).
-- General programming concepts (e.g. timeouts, HTTP helpers, logger wrappers).
-
----
-
-## File Structure
-
-### Single Context (Standard)
+Most repos have a single context:
 
 ```
 /
-├── CONTEXT.md                    ← Ubiquitous language glossary
+├── CONTEXT.md
 ├── docs/
 │   └── adr/
-│       ├── 0001-storage-engine.md
-│       └── 0002-auth-tokens.md
+│       ├── 0001-event-sourced-orders.md
+│       └── 0002-postgres-for-write-model.md
 └── src/
 ```
 
-### Multi-Context Repositories
-
-If different subsystems have distinct ubiquitous languages (e.g. `billing` vs `fulfillment`), a `CONTEXT-MAP.md` at root maps each bounded context:
+If a `CONTEXT-MAP.md` exists at the root, the repo has multiple contexts. The map points to where each one lives:
 
 ```
 /
-├── CONTEXT-MAP.md                ← Maps bounded contexts and relationships
-├── docs/adr/                     ← System-wide ADRs
-└── src/
-    ├── ordering/
-    │   └── CONTEXT.md
-    └── billing/
-        └── CONTEXT.md
+├── CONTEXT-MAP.md
+├── docs/
+│   └── adr/                          ← system-wide decisions
+├── src/
+│   ├── ordering/
+│   │   ├── CONTEXT.md
+│   │   └── docs/adr/                 ← context-specific decisions
+│   └── billing/
+│       ├── CONTEXT.md
+│       └── docs/adr/
 ```
 
-Create files lazily: only when the first term or ADR is resolved. Respect existing project document conventions if ADRs or glossaries are already placed elsewhere (e.g. `doc/adr/` or `wiki/`).
+Create files lazily: only when you have something to write. If no `CONTEXT.md` exists, create one when the first term is resolved. If no `docs/adr/` exists, create it when the first ADR is needed. Where the project already keeps its glossary or ADRs somewhere else (`doc/adr/`, a wiki), write there instead.
 
----
+## During the session
 
-## The Active Modeling Protocol
+### Challenge against the glossary
 
-### 1. Challenge Against the Glossary
+When the user uses a term that conflicts with the existing language in `CONTEXT.md`, call it out immediately. "Your glossary defines 'cancellation' as X, but you seem to mean Y. Which is it?"
 
-When the user or code uses a term conflicting with existing language, call it out immediately:
+### Sharpen fuzzy language
 
-> _"The glossary defines 'Cancellation' as voiding an unfulfilled order, but you described 'Cancellation' of an already shipped package. Do you mean 'Return' or 'Recall'?"_
+When the user uses vague or overloaded terms, propose a precise canonical term. "You're saying 'account': do you mean the Customer or the User? Those are different things."
 
-### 2. Sharpen Fuzzy and Overloaded Terms
+### Discuss concrete scenarios
 
-When terms are overloaded or vague, propose a precise canonical term:
+When domain relationships are being discussed, stress-test them with specific scenarios. Invent scenarios that probe edge cases and force the user to be precise about the boundaries between concepts.
 
-> _"You mentioned 'User': in this context, do you mean 'Organization Admin', 'Member', or 'API Service Account'?"_
+### Cross-reference with code
 
-### 3. Discuss Concrete Scenarios
+When the user states how something works, check whether the code agrees. If you find a contradiction, surface it: "Your code cancels entire Orders, but you just said partial cancellation is possible. Which is right?"
 
-Probe domain relationships with concrete boundary scenarios:
+### Update CONTEXT.md inline
 
-> _"What happens if an organization subscription expires while an asynchronous batch export is actively running?"_
+When a term is resolved, update `CONTEXT.md` right there. Don't batch these up: capture them as they happen. Use the format in [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md).
 
-### 4. Cross-Reference with Code
+`CONTEXT.md` should be totally devoid of implementation details. Do not treat `CONTEXT.md` as a spec, a scratch pad, or a repository for implementation decisions. It is a glossary and nothing else.
 
-Compare user descriptions with the existing codebase:
+### Offer ADRs sparingly
 
-> _"The codebase requires a verified billing address before generating an invoice, but you stated invoices can be drafted without an address. Which is the intended invariant?"_
+Only offer to create an ADR when all three are true:
 
-### 5. Update CONTEXT.md Inline
+1. **Hard to reverse**: the cost of changing your mind later is meaningful
+2. **Surprising without context**: a future reader will wonder "why did they do it this way?"
+3. **The result of a real trade-off**: there were genuine alternatives and you picked one for specific reasons
 
-Update `CONTEXT.md` immediately when a term is settled. Do not batch glossary updates until the end of the session. Keep definitions tight (1-2 sentences defining what the entity IS, not how it is implemented). See [CONTEXT-FORMAT.md](CONTEXT-FORMAT.md).
-
-### 6. Offer ADRs Sparingly: The 3-Criteria Filter
-
-Only propose recording an ADR when ALL THREE criteria are satisfied:
-
-1. **Hard to Reverse:** Changing the decision later imposes high migration, refactoring, or coordination costs.
-2. **Surprising Without Context:** A reasonable future engineer might ask _"Why did they do it this way instead of the standard approach?"_
-3. **A Real Trade-off:** There were genuine alternative options, and one was chosen with deliberate acceptance of specific disadvantages.
-
-If any criterion is missing, do NOT create an ADR. Record it as an invariant or decision in the specification instead. See [ADR-FORMAT.md](ADR-FORMAT.md).
+If any of the three is missing, skip the ADR. Use the format in [ADR-FORMAT.md](./ADR-FORMAT.md).

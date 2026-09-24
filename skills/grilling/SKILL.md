@@ -1,96 +1,32 @@
 ---
 name: grilling
-description: Interrogates requirements and resolves architectural ambiguity through structured inquiry with recommended defaults. Use when user intent is broad, architectural decisions are consequential, or specifications are incomplete. Do not use for unambiguous tasks, routine edits, or facts discoverable from code.
+description: Grill the user relentlessly about a plan, decision, or idea. Use when the user wants to stress-test their thinking, or uses any 'grill' trigger phrases.
 license: MIT
 metadata:
   pack: core
   attribution: Adapted from mattpocock/skills (MIT License)
 ---
 
-# Grilling: Disciplined Requirements Elicitation
+Interview the user relentlessly until you reach a shared understanding. Map this as a **design tree**: every decision branches into the decisions that hang off it.
 
-Grilling reverses the default dynamic where the agent guesses and the user corrects. The agent interrogates the user to resolve ambiguity, unearth unspoken assumptions, and establish explicit boundaries before designing or implementing.
+Work the tree in **rounds**. The **frontier** is every decision whose prerequisites are already settled: the questions you can ask _now_ without guessing at answers you haven't heard yet. Ask the whole frontier in one round: number each question and give your recommended answer. Then wait for the user's answers before the next round.
 
-## When to Use
+Format a round like so:
 
-- User presents a broad or ambiguous feature request ("add payments", "we need audit logging").
-- Multiple viable architectural paths exist, and the decision is hard to reverse.
-- Designing a new data model, API contract, or security boundary.
-- Identifying unknown unknowns before drafting a specification.
+```
+❓ **Q1** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
 
-## When NOT to Use
-
-- The user gives an exact, unambiguous command ("fix typo on line 42", "rename `getUser` to `fetchUser`").
-- The question can be answered by searching and reading the codebase. Never ask the human for facts you can look up yourself.
-- Requirements and test seams are already settled.
+➡️ <your recommended answer>
 
 ---
 
-## The Grilling Protocol
+❓ **Q2** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
 
-### 1. Discover Facts Before Inquiring
-
-Before asking questions, search the codebase:
-
-- Check existing models, schemas, and configurations.
-- Check established dependencies and existing architectural conventions.
-- Only ask the user about true decisions, domain rules, and trade-offs that cannot be discovered from code.
-
-### 2. Build the Decision Dependency Frontier
-
-Decisions have prerequisites. Foundation decisions (storage architecture, multi-tenancy, security boundaries) block downstream decisions (API routes, UI layouts):
-
-- Identify the **unblocked frontier**: only ask questions whose prerequisites are already settled.
-- Do not ask downstream implementation questions while fundamental architectural choices remain unresolved.
-
-### 3. Numbered Rounds with Recommended Defaults (➡️)
-
-Never dump an unorganized wall of questions. Batch questions into rounds (max 3-4 numbered questions per turn).
-
-For **every single question**, you MUST supply a concrete, opinionated recommendation:
-
-```markdown
-1. Where should idempotency tokens be stored and what should their TTL be?
-   ➡️ **Recommended:** Store in existing Redis instance with 24-hour expiration, matching session cache infrastructure.
-
-2. How should concurrent duplicate requests for the same idempotency key be handled?
-   ➡️ **Recommended:** Acquire a 5-second distributed lock; return HTTP 409 Conflict if lock acquisition fails.
+➡️ <your recommended answer>
 ```
 
-**Why this matters:** Supplying recommendations reduces cognitive load. The user can simply reply with _"LGTM"_, _"accept recommendations"_, or override specific points without having to write paragraphs from scratch.
+Each round the user answers reshapes the tree: settled decisions push the frontier outward and unblock questions that depended on them. Recompute the frontier and ask the next round. A question whose answer depends on another question still open in this round belongs to a _later_ round, not this one.
 
-### 4. Capture Invariants into 3-Tier Boundaries
+Finding _facts_ is your job, never the user's. When a frontier question needs a fact from the environment (filesystem, tools, etc.), dispatch a sub-agent to find it; don't ask the user for anything you could look up yourself. Don't block on it: a running exploration is an unsettled prerequisite, so only the questions downstream of it wait for the sub-agent to report; ask the rest of the frontier now. The _decisions_ are the user's: put each to them and wait.
 
-Synthesize agreed constraints into a 3-tier boundary contract:
-
-- **Always Do:** Non-negotiable rules (e.g. all monetary values stored as integer cents; all untrusted payloads validated with Zod at the boundary).
-- **Ask First:** Actions requiring explicit approval before execution (e.g. schema drops, external webhook registrations, modifying billing logic).
-- **Never Do:** Strict anti-patterns (e.g. floating-point math for money; bypassing authentication on internal endpoints; silently swallowing errors).
-
-### 5. Explicit Confirmation Gate
-
-Never proceed to implementation or file creation based on implied consent. Prompt the user for explicit confirmation:
-
-- Summarize agreed decisions and boundaries.
-- Obtain approval before acting on them.
-
----
-
-## Common Rationalizations
-
-| Rationalization                                            | Reality                                                                                                               |
-| :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
-| _"I should just make an educated guess and start coding."_ | Undetected wrong assumptions compound into discarded code. Clarify up front.                                          |
-| _"Asking questions annoys the user."_                      | Asking open-ended, vague questions annoys users. Numbered questions with **concrete recommendations** save user time. |
-| _"I'll ask everything in one big list."_                   | Long walls of questions cause cognitive fatigue. Ask 3-4 frontier questions at a time.                                |
-| _"I need to ask which database library they use."_         | Inspect `package.json`, `Cargo.toml`, or imports directly. Never ask for discoverable facts.                          |
-
----
-
-## Verification
-
-Grilling is complete when:
-
-1. All critical questions on the decision frontier have explicit answers or accepted recommendations.
-2. Boundaries (Always / Ask / Never) are defined.
-3. The user explicitly confirms the direction.
+The session is done when the frontier is empty: every branch of the design tree visited, nothing left silently assumed. Do not act on it until the user confirms you have reached a shared understanding.

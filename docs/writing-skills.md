@@ -197,14 +197,20 @@ the reason.
 3. **`codebase-design`.** Done. The glossary, the `_Avoid_` lists, and "Use these terms exactly" are restored from
    upstream, and the exposition is cut. `DESIGN-IT-TWICE.md` sends out one `design-explorer` run per constraint, in
    parallel, and leaves the shape of each design to the agent.
-4. **`grilling`, `tdd`, `ADR-FORMAT.md`:** bring them back toward the source, removing the question cap and fixing the
-   escaped fences. Three departures from upstream:
-   - `tdd` keeps REFACTOR. Upstream moved it into a `code-review` skill, which this repo doesn't have.
-   - `tdd`'s description narrows to test-first work, red-green-refactor, and bugs with a reproduction. `/build` and
-     `craftsman` call it directly, so the broad trigger only made it fire where nobody asked for test-first.
-   - `grilling`'s description leads with *grill*, the word a user types.
-5. **Frontmatter:** move `pack`, `attribution`, and `references` under `metadata`. `references` can go entirely, since
-   the body already links its sibling files.
+4. **`grilling`, `tdd`, `domain-modeling`.** Done. `grilling` is upstream's, question cap gone. `domain-modeling`
+   and its two format files are upstream's too, which fixed the escaped fences in `ADR-FORMAT.md`. `tdd` gets back
+   upstream's `tests.md` and `mocking.md`. Four departures from upstream:
+   - `tdd` keeps REFACTOR, as a rule of the loop. Upstream moved it into a `code-review` skill, which this repo doesn't
+     have.
+   - `tdd`'s description narrows to test-first work, red-green-refactor, and bugs reproduced as a failing test.
+     `/build` and `craftsman` call it directly, so the broad trigger only made it fire where nobody asked for test-first.
+   - `tdd` keeps three rules from our version, in positive form: red means the behaviour is missing (not a compile
+     error), a bug's first test reproduces the reported symptom, and green means every test and lint rule is live. A seam
+     named in the ticket counts as agreed, so `/build` doesn't stop to reconfirm it.
+   - `domain-modeling` writes to the project's existing glossary or ADR location when it has one, instead of creating
+     `docs/adr/` next to it.
+5. **Frontmatter.** Done. `pack` and `attribution` sit under `metadata`, and `references` is gone, since each body
+   already links its sibling files.
 6. **`browser-verify`:** run it on a real task, then decide whether "close the tabs you opened" and "wait on conditions"
    change the agent's behaviour.
 
