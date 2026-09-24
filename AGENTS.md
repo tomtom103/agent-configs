@@ -15,6 +15,7 @@ edits here are live everywhere.
 - `claude/` — Claude Code-only files, mirroring `~/.claude/`
   - `agents/<id>.md` — subagents (frontmatter: `name`, `description`, `tools`/`disallowedTools`)
 - `CLAUDE.md` — imports this file; Claude Code reads `CLAUDE.md`, not `AGENTS.md`
+- `CONTEXT.md` — the domain glossary
 - `install.sh` — one `harness_<name>` function per harness, each a list of `link SRC DST` calls
 - `docs/` — design notes; `docs/writing-skills.md` is how skills, commands, and agents are written
 - `scripts/lint-skills.sh` — mechanical checks for skills, commands, and agents
@@ -31,6 +32,9 @@ scripts/lint-skills.sh    # frontmatter, agent-copy parity, harness tool names, 
 ## Rules
 - Put anything that works across harnesses at the top level (`skills/`, `instructions/`);
   harness-specific formats go under that harness's directory
+- `instructions/global.md` is sent with every request, in every project and both harnesses. A line
+  belongs there only when it holds across projects and changes what the agent does by default; a
+  rule for one project goes in that project's `AGENTS.md`
 - Skills must stay portable: reference supporting files with paths relative to `SKILL.md`, and
   describe a capability ("whichever browser automation this session provides") rather than naming
   a tool only one harness or plugin provides
