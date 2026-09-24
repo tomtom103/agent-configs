@@ -1,13 +1,30 @@
+# This repo is symlinked into live harness config (see install.sh), so anything a harness or tool writes into a
+# linked directory lands here. Everything below is machine-local or generated; shared config is committed.
+
+# --- Secrets ---------------------------------------------------------------------------------------------------------
+# Config reads secrets through {env:VAR}; the values themselves stay out of the repo.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Machine-local harness config for working in this repo -----------------------------------------------------------
+# opencode's project directory: local overrides such as proxy routing, plus the deps opencode installs beside them.
+.opencode/
+# Claude Code's per-machine permission and skill overrides. The shared Claude config lives under claude/.
+.claude/settings.local.json
+
+# --- Generated -------------------------------------------------------------------------------------------------------
+# Plugin dependencies. A plugin's package.json and lockfile are committed.
+node_modules/
+# Backups install.sh --force writes beside a replaced target.
+*.bak.*
+
+# --- OS and editor ---------------------------------------------------------------------------------------------------
 .DS_Store
 *.swp
 *.swo
-
-# machine-local project config for working in this repo (e.g. local proxy routing)
-.opencode/opencode.json
-.opencode/opencode.jsonc
-
-# plugin dependencies
-node_modules/
-
-# backups created by install.sh
-*.bak.*
+*~
+.idea/
+.vscode/

@@ -52,12 +52,14 @@ scripts/lint-skills.sh    # frontmatter, agent-copy parity, harness tool names, 
 - Only the repo root may contain a file named `AGENTS.md` — opencode loads any `AGENTS.md` it
   discovers as instructions for that directory
 - Never commit secrets. Use `{env:VAR}` substitution in opencode config, and prefer OAuth for MCP servers
-- `.opencode/opencode.json` is machine-local and gitignored; it only applies when working in this repo,
+- `.opencode/` is machine-local and gitignored; its `opencode.json` only applies when working in this repo,
   so shared config never goes there
 - Every `link` call in `install.sh` must have a source in the repo
 - Adding a harness: create `<harness>/`, add a `harness_<harness>` function, and append it to
   `ALL_HARNESSES`
 - opencode: follow the V2 docs at https://opencode.ai/v2/docs/, not the V1 docs. V2 reads only
   `AGENTS.md` for instructions (no `CLAUDE.md` fallback)
+- opencode saves TUI settings (theme, plugins) by rewriting `cli.json`, which replaces the link with a regular file.
+  When `./install.sh --check` reports it as `differs`, copy the file back into `opencode/cli.json` and rerun `install.sh`
 - `opencode/opencode.jsonc` still uses V1 field names (`provider`, `options`); V2 accepts them.
   Keep each provider/agent/command entry entirely in one format when editing

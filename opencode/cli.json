@@ -3,9 +3,7 @@
   "theme": {
     "name": "opencode"
   },
-  "plugins": [
-    "opencode-overclock"
-  ],
+  "plugins": [],
   "diffs": {
     "wrap": "word"
   },
