@@ -1,47 +1,26 @@
 ---
-description: Test-driven implementation loop with stop-the-line tripwires and incremental verification.
----
-# Lifecycle Phase 3: Build
-
-Execute tasks from `tasks/plan.md`. Arguments (may be empty): $ARGUMENTS
-
-## Modes
-- **No arguments (Default):** Execute only the next unblocked task on the frontier, verify, and pause for human review.
-- **`auto`:** Iteratively execute all unblocked tasks from `tasks/plan.md` sequentially until all are complete or a tripwire triggers.
-- **A specific task:** Execute only that task, verify, and pause for human review.
-
+description: Build the next ticket from TICKETS.md test-first, or every ticket with auto
 ---
 
-## The Increment Cycle (Per Task)
+Build tickets from `TICKETS.md`, or from the issue tracker if `/plan` published them there. Arguments (may be empty):
+$ARGUMENTS
 
-For each task on the frontier:
+- **Empty:** build the next ticket on the frontier (an unticked ticket whose blockers are all ticked), then stop for
+  review.
+- **`auto`:** build frontier tickets one after another until none are left or a tripwire fires.
+- **A ticket ID:** build that ticket, then stop for review.
 
-1. **RED (Prove Capability Missing):**
-   - Write a focused test at the declared public seam before touching implementation code.
-   - Use an **independent test oracle**: never compute expected results with the same logic used in production code.
-   - Run the test suite: confirm the test fails for the expected reason (missing capability, not a syntax error).
-   - *Prove-It Pattern:* If fixing a bug, the test MUST reproduce the reported defect before touching the fix.
+For each ticket:
 
-2. **GREEN (Minimal Implementation):**
-   - Write the minimal code required to make the test pass clean.
-   - Do NOT add speculative abstractions or unrequested features.
-   - Never use error suppressions (`@ts-ignore`, `eslint-disable`, `# noqa`) or test skips (`.skip`).
+1. Call the skill tool with "tdd" and build the ticket at its seam.
+2. If the ticket changes what a user sees in a browser, call the skill tool with "browser-verify" and check it there.
+3. Run the project's linters, typecheckers, and full test suite.
+4. Tick the ticket off, or close its issue. If you're committing as you go, commit only this ticket's files, in a commit that names it.
 
-3. **REFACTOR (Clean While Green):**
-   - Refactor only while all tests are green.
-   - Remove duplication, simplify names, and polish structure. Re-verify tests pass after every refactoring edit.
+A ticket is done when every acceptance criterion holds and step 3 passes clean.
 
-4. **VERIFY:**
-   - Run project linters and typecheckers to confirm zero regressions. For frontend/UI features, verify visual rendering in a browser when a browser tool is available.
+Stop and report to the user when a tripwire fires:
 
-5. **UPDATE PLAN:**
-   - Mark the completed task in `tasks/plan.md`.
-   - If git commits are used, stage ONLY the files modified for this slice with a descriptive commit message.
-
----
-
-## Stop-The-Line Tripwires (Immediate Halt)
-Halt execution and alert the user immediately if:
-- **Test Failure Loop:** A test fails to pass after 3 consecutive fix attempts.
-- **Irreversible Boundary:** The task requires altering production database schemas, payment processing, or secret keys.
-- **Specification Ambiguity:** An unhandled edge case is discovered that contradicts `SPEC.md` or requires human judgment.
+- A test still fails after 3 attempts at a fix.
+- The ticket needs a change to a production database schema, payment processing, or secret keys.
+- You hit an edge case the spec doesn't cover, or one that contradicts it.

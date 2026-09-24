@@ -127,7 +127,8 @@ commit body. AGENTS.md is loaded only when working in this repo, so the rule cos
 
 [The script](../scripts/lint-skills.sh) checks skill frontmatter against the spec, keeps shared commands to
 `description`, requires each agent's two copies to share one body, and catches harness tool names outside `claude/` and
-`opencode/`, broken relative links, and escaped code fences. A `SKILL.md` over 150 lines gets a warning, not an error.
+`opencode/`, unquoted `: ` in frontmatter values (invalid YAML), broken relative links, and escaped code fences. A
+`SKILL.md` over 150 lines gets a warning, not an error.
 The script itself is the full list of checks.
 
 When the same review comment comes up twice, ask whether the rule behind it is mechanical. If it is, turn it into a
@@ -183,21 +184,19 @@ the reason.
 
 1. **Infrastructure.** Done: the vendored reference with our `SKILL-MECHANICS.md`, `/review-skill`,
    `scripts/lint-skills.sh`, the AGENTS.md rules, and a baseline commit.
-2. **Commands, agents, and the workflow's vocabulary, in one change.** `tasks/plan.md`, `SPEC.md`, and *task* versus
-   *ticket* are hard-coded across `to-spec`, `to-tickets`, `TICKET-TEMPLATE.md`, `/define`, `/plan`, and `/build`.
-   Settling them while the commands are being rewritten keeps the chain working at every commit.
-   - Commands become thin callers of skills. That removes the extra copies of the TDD loop, the second plan template,
-     the third copy of the spec outline, and the second question cap (in `/define`).
-   - Use *ticket* throughout, matching the skill name and the vendored reference. Keep one plan file, because `/build`
-     works through tickets one at a time and ticks each off there. Replace "human architect" with "the user".
-   - Agent bodies call skills and name no harness tool, so each pair shares one body. Claude Code copies may also
-     preload skills through `skills:` frontmatter. Agent descriptions say when to delegate, the way a skill's
-     description says when to fire. `craftsman` and `/build` call `browser-verify` instead of restating a browser check.
-   - Each skill ends on its own completion criterion. The routing lines in `to-tickets` (to `/build`) and `grilling`
-     (to `to-spec`) move into the commands, since a skill running inside an agent has no command to route to.
+2. **Commands, agents, and the workflow's vocabulary.** Done, in one change so the chain worked at every commit.
+   - The commands are thin callers of skills, which removed the extra copies of the TDD loop, the plan template, the
+     spec outline, and the question cap.
+   - The workflow says *ticket* throughout and keeps one plan file, `TICKETS.md`, beside the spec. `/build` works
+     through it one ticket at a time and ticks each off.
+   - Each agent pair shares one body that calls skills and names no harness tool. The descriptions say when to delegate.
+     `craftsman` and `/build` call `browser-verify`, and `codebase-researcher` and `design-explorer` call
+     `codebase-design`.
+   - Skills end on their own completion criterion. Routing to the next step lives only in the commands, since a skill
+     running inside an agent has no command to route to.
 3. **`codebase-design`:** restore the glossary, the `_Avoid_` lists, and "Use these terms exactly". Cut the exposition.
-   Design It Twice gives each design constraint its own `design-explorer` run, in parallel, so no design sees the
-   others. `codebase-researcher` calls this skill for the dependency categories instead of restating them.
+   `DESIGN-IT-TWICE.md` sends out one `design-explorer` run per constraint, in parallel, so no design sees the others.
+   The agent already takes one constraint per run.
 4. **`grilling`, `tdd`, `ADR-FORMAT.md`:** bring them back toward the source, removing the question cap and fixing the
    escaped fences. Three departures from upstream:
    - `tdd` keeps REFACTOR. Upstream moved it into a `code-review` skill, which this repo doesn't have.

@@ -1,14 +1,15 @@
 ---
 name: grilling
 description: Interrogates requirements and resolves architectural ambiguity through structured inquiry with recommended defaults. Use when user intent is broad, architectural decisions are consequential, or specifications are incomplete. Do not use for unambiguous tasks, routine edits, or facts discoverable from code.
-pack: core
 license: MIT
-attribution: Adapted from mattpocock/skills (MIT License)
+metadata:
+  pack: core
+  attribution: Adapted from mattpocock/skills (MIT License)
 ---
 
 # Grilling: Disciplined Requirements Elicitation
 
-Grilling reverses the default dynamic where the agent guesses and the user corrects. The agent interrogates the human architect to resolve ambiguity, unearth unspoken assumptions, and establish explicit boundaries before designing or implementing.
+Grilling reverses the default dynamic where the agent guesses and the user corrects. The agent interrogates the user to resolve ambiguity, unearth unspoken assumptions, and establish explicit boundaries before designing or implementing.
 
 ## When to Use
 
@@ -21,7 +22,7 @@ Grilling reverses the default dynamic where the agent guesses and the user corre
 
 - The user gives an exact, unambiguous command ("fix typo on line 42", "rename `getUser` to `fetchUser`").
 - The question can be answered by searching and reading the codebase. Never ask the human for facts you can look up yourself.
-- Requirements and test seams are already settled (use `to-spec` or `to-tickets` directly instead).
+- Requirements and test seams are already settled.
 
 ---
 
@@ -71,7 +72,7 @@ Synthesize agreed constraints into a 3-tier boundary contract:
 Never proceed to implementation or file creation based on implied consent. Prompt the user for explicit confirmation:
 
 - Summarize agreed decisions and boundaries.
-- Obtain approval before advancing to specification (`to-spec`) or task planning (`to-tickets`).
+- Obtain approval before acting on them.
 
 ---
 
@@ -93,4 +94,3 @@ Grilling is complete when:
 1. All critical questions on the decision frontier have explicit answers or accepted recommendations.
 2. Boundaries (Always / Ask / Never) are defined.
 3. The user explicitly confirms the direction.
-4. Vocabulary and architectural decisions are handed off to `domain-modeling` and `to-spec`.

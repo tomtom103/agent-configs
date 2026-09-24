@@ -62,6 +62,22 @@ each_hit() {
   set +f
 }
 
+check_frontmatter() {
+  say "[frontmatter]"
+  for f in skills/*/SKILL.md commands/*.md claude/agents/*.md opencode/agents/*.md; do
+    [ -f "$f" ] || continue
+    # YAML reads an unquoted value containing ': ' as a nested mapping and rejects the file
+    bad=$(frontmatter "$f" | awk -v q="'" '
+      /^[A-Za-z0-9_-]+:[ \t]/ {
+        v = $0
+        sub(/^[A-Za-z0-9_-]+:[ \t]+/, "", v)
+        c = substr(v, 1, 1)
+        if (c != "\"" && c != q && c != "|" && c != ">" && index(v, ": ")) { print; exit }
+      }')
+    [ -z "$bad" ] || error "$f" "unquoted ': ' in '${bad%%:*}'; quote the value or reword it"
+  done
+}
+
 check_skills() {
   say "[skills]"
   for dir in skills/*/; do
@@ -184,6 +200,7 @@ check_markdown() {
   set +f
 }
 
+check_frontmatter
 check_skills
 check_commands
 check_agents

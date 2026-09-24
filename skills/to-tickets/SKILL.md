@@ -1,74 +1,50 @@
 ---
 name: to-tickets
-description: Decomposes a specification or plan into a directed acyclic graph (DAG) of independently verifiable, tracer-bullet tasks. Use when planning implementation steps from a spec or readying work for execution.
-pack: core
+description: Break a spec, plan, or design into tracer-bullet tickets, each declaring the tickets that block it. Use when the user wants work broken into tickets or slices before it's built.
 license: MIT
-attribution: Adapted from mattpocock/skills (MIT License)
-references:
-  - TICKET-TEMPLATE.md
+metadata:
+  pack: core
+  attribution: Adapted from mattpocock/skills (MIT License)
 ---
 
-# To Tickets: Task Decomposition & Dependency Planning
+# To Tickets
 
-Decompose a specification, feature plan, or design into an executable dependency DAG of **tracer-bullet tasks**.
+Break a spec, plan, or design into **tickets**: **tracer-bullet** slices, each declaring the tickets that **block**
+it. Tickets with no open blockers are the **frontier**, and can be built now or in parallel.
 
-## Core Principles
+## Slicing
 
-### 1. Vertical Tracer Bullets vs Horizontal Layers
+- **Vertical.** Each ticket cuts a narrow but complete path through every layer it touches (schema, logic, interface,
+  tests), so it's verifiable on its own and the software works when it lands. Slicing by layer ("all the tables", then
+  "all the routes") defers integration to the end and leaves nothing testable in between.
+- **Sized for one fresh context window**: roughly 50–150 lines of focused diff.
+- **Blocked only by what truly gates it.** Every extra edge shrinks the frontier.
+- **Prefactor first.** "Make the change easy, then make the easy change." If the code needs reshaping before the
+  feature fits, that's the first ticket.
 
-- **Anti-pattern (Horizontal Slicing):** "Task 1: Build all database tables; Task 2: Build all API routes; Task 3: Build UI." Slices cannot be tested end-to-end, defer integration risks to the end, and leave software broken between steps.
-- **Tracer Bullet (Vertical Slicing):** Each task cuts a narrow but COMPLETE path through schema, logic, interface, and tests. Each completed task delivers working, verifiable software at that seam.
+A **wide refactor** is the exception: one mechanical change (renaming a column, retyping a shared symbol) whose blast
+radius fans across the codebase, so no single slice can land green. Sequence it as **expand-contract**:
 
-### 2. Context-Sized Increments
+1. **Expand:** add the new form beside the old, so nothing breaks.
+2. **Migrate:** move callers over in batches sized by blast radius (per package or directory). Each batch is a ticket
+   blocked by the expand, and CI stays green because the old form still exists.
+3. **Contract:** delete the old form, in a ticket blocked by every migrate batch.
 
-- Size each increment so it can be implemented, verified, and reasoned about within a single, fresh context window.
-- Thin increments (~50-150 lines of focused diff) minimize regression risk and make rollbacks trivial.
+When even the batches can't stay green on their own, put them on a shared integration branch, all blocking one final
+integrate-and-verify ticket. Only that ticket promises green.
 
-### 3. Explicit Blocking Edges & The Ready Frontier
+## Process
 
-- Every task explicitly declares its prerequisite blockers: `Blocked By: [Task IDs]`.
-- Tasks with no blockers form the **Ready Frontier** and can be worked on immediately or in parallel.
-- Maintain an accurate DAG so tasks are never started before their true foundations exist.
+1. **Gather.** Work from the spec or plan in the conversation. If the user passed a path or an issue, read it in full;
+   with neither, read `SPEC.md`. Read the code the tickets will touch, and name things in the project's domain
+   vocabulary (`CONTEXT.md`, if it exists).
+2. **Draft** the tickets by the slicing rules. Give each one a **seam**: the test file where its first test goes red.
+3. **Quiz the user.** Show the tickets as a numbered list with title, blockers, and what each delivers end to end. Ask
+   whether the granularity is right, whether any blocking edge could go, and what to merge or split. Revise until the
+   user approves.
+4. **Write** the approved tickets to `TICKETS.md` beside the spec (at the repo root if there's no spec file), blockers
+   first, in the format in [TICKET-TEMPLATE.md](TICKET-TEMPLATE.md). If the project tracks work in an issue tracker
+   (GitHub, Linear), publish one issue per ticket instead, blockers first, using the tracker's native blocking links
+   where it has them.
 
-### 4. The Wide-Refactor Exception: Expand-and-Contract
-
-A **wide refactor** (e.g. renaming a ubiquitous column, changing a core function signature used across hundreds of files) cannot be landed in a single vertical slice without breaking the entire test suite.
-
-Do NOT force wide refactors into single tracer bullets. Sequence them as **Expand-and-Contract**:
-
-1. **Expand:** Introduce the new interface or column alongside the old one. Both exist simultaneously; existing tests remain green.
-2. **Migrate:** Migrate callers in bounded batches (by directory or module). Each batch is an independent task blocked by Expand, keeping CI green at every step.
-3. **Contract:** Once all callers use the new interface, delete the old implementation and remove deprecation warnings. Blocked by all migration batches.
-4. _(Optional)_ When intermediate batches cannot stay green in isolation, execute on a dedicated integration branch with a final integrate-and-verify gate.
-
----
-
-## The Decomposition Process
-
-### 1. Prefactoring First
-
-Look for opportunities to refactor existing code before adding new logic:
-
-> _"Make the change easy, then make the easy change."_ (Kent Beck)
-> If prefactoring is needed, make it Task 1 on the frontier.
-
-### 2. Draft Tasks with Public Seams
-
-For each task, define:
-
-- **Title:** Concise imperative action.
-- **Blocked By:** Explicit prerequisites.
-- **Seam:** File path to the automated test suite or verification assertion that will prove completion.
-- **Acceptance Criteria:** Verifiable conditions satisfying requirements.
-
-### 3. Output Location
-
-By default, output the plan to `tasks/plan.md` in the workspace using the format in [TICKET-TEMPLATE.md](TICKET-TEMPLATE.md). If integrated with an external issue tracker (GitHub, Linear), format each task as an issue and link blocking dependencies.
-
-### 4. Confirm with Human Architect
-
-Present the task breakdown to the user. Confirm:
-
-- Granularity: Are any tasks too large or too trivial?
-- Blocking Edges: Are dependencies minimal and strictly gating?
-- Once confirmed, proceed to execution via `/build` or the `tdd` skill.
+Done when every approved ticket is written with its blockers, seam, and acceptance criteria.

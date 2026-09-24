@@ -1,42 +1,26 @@
-# Ticket & Plan Templates
+# TICKETS.md format
 
-## Single Task Format (Markdown)
-
-```markdown
-### [TASK-NN]: [Concise Title in Imperative Mood]
-
-- **Blocked By:** [TASK-XX, TASK-YY | None (Can start immediately)]
-- **Seam:** [File path to test file, e.g. tests/unit/auth-token.test.ts]
-- **Verification:** [Command or check that proves completion, e.g. `bun test tests/unit/auth-token.test.ts`]
-- **Deliverable:** The end-to-end behavior this task makes work from the caller's perspective.
-- **Acceptance Criteria:**
-  - [ ] Automated test at seam fails before implementation (Red).
-  - [ ] Implementation passes test without skips or suppressions (Green).
-  - [ ] Linters and typechecks pass clean.
-```
-
----
-
-## Tasks Plan Document (`tasks/plan.md`)
+One file per spec, tickets in dependency order (blockers first). Tick a ticket's box when it's built.
 
 ```markdown
-# Implementation Plan: [Feature Name]
+# Tickets: <feature>
 
-## Frontier (Ready to Execute)
+Spec: `<path to the spec>`
 
-Tasks whose dependencies are completely satisfied.
+## [ ] T1: <imperative title>
 
-- [ ] **Task 1: [Title]**
-  - **Blocked By:** None
-  - **Seam:** `test/feature-core.test.ts`
-  - **Scope:** [Description of vertical slice]
+- **Blocked by:** none
+- **Seam:** `<test file>`
+- **Verify:** `<command that runs the seam's tests>`
+- **Delivers:** <the end-to-end behaviour this ticket makes work, from the caller's side>
+- **Acceptance criteria:**
+  - <observable condition>
+  - <observable condition>
 
-## Sequence (Blocked)
+## [ ] T2: <imperative title>
 
-Tasks waiting on prerequisite tasks.
-
-- [ ] **Task 2: [Title]**
-  - **Blocked By:** Task 1
-  - **Seam:** `test/feature-api.test.ts`
-  - **Scope:** [Description of vertical slice]
+- **Blocked by:** T1
+- ...
 ```
+
+On an issue tracker, each ticket is one issue carrying the same fields.
