@@ -194,9 +194,9 @@ the reason.
      `codebase-design`.
    - Skills end on their own completion criterion. Routing to the next step lives only in the commands, since a skill
      running inside an agent has no command to route to.
-3. **`codebase-design`:** restore the glossary, the `_Avoid_` lists, and "Use these terms exactly". Cut the exposition.
-   `DESIGN-IT-TWICE.md` sends out one `design-explorer` run per constraint, in parallel, so no design sees the others.
-   The agent already takes one constraint per run.
+3. **`codebase-design`.** Done. The glossary, the `_Avoid_` lists, and "Use these terms exactly" are restored from
+   upstream, and the exposition is cut. `DESIGN-IT-TWICE.md` sends out one `design-explorer` run per constraint, in
+   parallel, and leaves the shape of each design to the agent.
 4. **`grilling`, `tdd`, `ADR-FORMAT.md`:** bring them back toward the source, removing the question cap and fixing the
    escaped fences. Three departures from upstream:
    - `tdd` keeps REFACTOR. Upstream moved it into a `code-review` skill, which this repo doesn't have.

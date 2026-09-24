@@ -1,93 +1,80 @@
 ---
 name: codebase-design
-description: Principles for deep module architecture and high-leverage interface design. Use when creating new services or modules, untangling tightly coupled subsystems, designing APIs, or refactoring architecture.
-pack: core
+description: Shared vocabulary for designing deep modules. Use when the user wants to design or improve a module's interface, find deepening opportunities, decide where a seam goes, make code more testable or AI-navigable, or when another skill or agent needs the deep-module vocabulary.
 license: MIT
-attribution: Adapted from mattpocock/skills (MIT License)
-references:
-  - DEEPENING.md
-  - DESIGN-IT-TWICE.md
+metadata:
+  pack: core
+  attribution: Adapted from mattpocock/skills (MIT License)
 ---
 
-# Codebase Design: Deep Modules & High-Leverage Architecture
+# Codebase Design
 
-Rooted in John Ousterhout's _A Philosophy of Software Design_ and domain-driven architectural patterns, this skill guides the creation of deep, high-leverage modules that make codebases simpler to understand, maintain, and evolve.
+Design **deep modules**: a lot of behaviour behind a small interface, placed at a clean seam, testable through that interface. Use this language and these principles wherever code is being designed or restructured. The aim is leverage for callers, locality for maintainers, and testability for everyone.
 
-## When to Use
+## Glossary
 
-- Designing a new service, package, module, or domain boundary.
-- Decomposing a tangled god-object or sprawling utility library into cohesive components.
-- Designing API contracts or SDK entry points for internal or external callers.
-- Assessing architectural coupling and seam placement.
+Use these terms exactly: don't substitute "component," "service," "API," or "boundary." Consistent language is the whole point.
 
-## When NOT to Use
+**Module**: anything with an interface and an implementation. Deliberately scale-agnostic: a function, class, package, or tier-spanning slice. _Avoid_: unit, component, service.
 
-- Routine bug fixes or isolated one-line edits.
-- Editing declarative configuration files.
-- Mechanical script maintenance.
+**Interface**: everything a caller must know to use the module correctly: the type signature, but also invariants, ordering constraints, error modes, required configuration, and performance characteristics. _Avoid_: API, signature (too narrow, they refer only to the type-level surface).
 
----
+**Implementation**: what's inside a module, its body of code. Distinct from **Adapter**: a thing can be a small adapter with a large implementation (a Postgres repo) or a large adapter with a small implementation (an in-memory fake). Reach for "adapter" when the seam is the topic; "implementation" otherwise.
 
-## Core Architectural Principles
+**Depth**: leverage at the interface. The amount of behaviour a caller (or test) can exercise per unit of interface they have to learn. A module is **deep** when a large amount of behaviour sits behind a small interface, **shallow** when the interface is nearly as complex as the implementation.
 
-### 1. Deep Modules (Depth Over Shallowness)
+**Seam** _(Michael Feathers)_: a place where you can alter behaviour without editing in that place; the *location* at which a module's interface lives. Where to put the seam is its own design decision, distinct from what goes behind it. _Avoid_: boundary (overloaded with DDD's bounded context).
 
-- **Shallow Module (Anti-pattern):** A module whose public interface is complicated relative to the small amount of capability it provides. (e.g. A 40-line wrapper around `fetch` that requires callers to pass 6 configuration objects).
-- **Deep Module (Ideal):** A module that provides a simple, intuitive interface while concealing substantial complexity and power behind it. (e.g. Unix file I/O: `open`, `read`, `write`, `close` concealing disk block caching, buffer pools, and kernel drivers).
-- **Measure of Architectural Leverage:**
-  $$\text{Leverage} = \frac{\text{Internal Functionality Provided}}{\text{Interface Complexity Imposed on Callers}}$$
+**Adapter**: a concrete thing that satisfies an interface at a seam. Describes *role* (what slot it fills), not substance (what's inside).
 
-### 2. Information Hiding vs Information Leakage
+**Leverage**: what callers get from depth. More capability per unit of interface they learn. One implementation pays back across N call sites and M tests.
 
-- **Information Hiding:** Knowledge of private algorithms, data representations, and third-party dependencies is strictly contained within the module.
-- **Information Leakage:** Occurs when an internal change to a module forces ripple edits across caller code (e.g. exposing internal database IDs, ORM models, or vendor SDK types directly to consumers).
-- **Hyrum's Law:** _"With a sufficient number of users of an API, all observable behaviors of your system will be depended on by somebody."_ Keep public surfaces strictly bounded.
+**Locality**: what maintainers get from depth. Change, bugs, knowledge, and verification concentrate in one place rather than spreading across callers. Fix once, fixed everywhere.
 
-### 3. The Full Caller Contract
+## Principles
 
-An interface is not just a function signature or type signature. The full contract comprises:
+- **Depth is a property of the interface, not the implementation.** A deep module can be internally composed of small, mockable, swappable parts; they just aren't part of the interface. A module can have **internal seams** (private to its implementation, used by its own tests) as well as the **external seam** at its interface.
+- **The deletion test.** Imagine deleting the module. If complexity vanishes, it was a pass-through. If complexity reappears across N callers, it was earning its keep.
+- **The interface is the test surface.** Callers and tests cross the same seam. If you want to test *past* the interface, the module is probably the wrong shape.
+- **One adapter means a hypothetical seam. Two adapters means a real one.** Don't introduce a seam unless something actually varies across it.
 
-- **Ordering:** Must `init()` be called before `run()`?
-- **Error Modes:** How are failures surfaced (exceptions, result tuples, status codes)?
-- **Invariants:** What assumptions must callers hold true?
-- **Configuration & Defaults:** Are sane defaults supplied so simple callers do not configure knobs?
-- **Performance & Resource Cleanup:** Must callers explicitly close or release handles?
+## Designing for testability
 
-### 4. Dependency Classification & Seams
+Good interfaces make testing natural:
 
-Classify dependencies before introducing interfaces:
+1. **Accept dependencies, don't create them.**
 
-- See [DEEPENING.md](DEEPENING.md) for the 4 categories: In-Process, Local-Substitutable, Remote-Owned (Ports & Adapters), and True External.
-- Observe the **Two-Adapter Rule**: Never create an interface or port unless at least two real adapters exist (typically production + in-memory test).
+   ```typescript
+   // Testable
+   function processOrder(order, paymentGateway) {}
 
-### 5. Design It Twice
+   // Hard to test
+   function processOrder(order) {
+     const gateway = new StripeGateway();
+   }
+   ```
 
-When designing a critical subsystem or boundary:
+2. **Return results, don't produce side effects.**
 
-- Never settle on the first design that comes to mind.
-- Explore at least 2 contrasting architectural designs (e.g. Minimalist vs Extensible).
-- See [DESIGN-IT-TWICE.md](DESIGN-IT-TWICE.md) for the structured comparison protocol.
+   ```typescript
+   // Testable
+   function calculateDiscount(cart): Discount {}
 
-### 6. Chesterton's Fence in Refactoring
+   // Hard to test
+   function applyDiscount(cart): void {
+     cart.total -= discount;
+   }
+   ```
 
-Before modifying or deleting code that appears redundant, verbose, or unusual, you MUST discover and explain why it was originally written. If you cannot explain why it exists, you are not qualified to change it.
+3. **Small surface area.** Fewer methods = fewer tests needed. Fewer params = simpler test setup.
 
----
+## Rejected framings
 
-## Common Rationalizations
+- **Depth as ratio of implementation-lines to interface-lines** (Ousterhout): rewards padding the implementation. We use depth-as-leverage instead.
+- **"Interface" as the TypeScript `interface` keyword or a class's public methods**: too narrow: interface here includes every fact a caller must know.
+- **"Boundary"**: overloaded with DDD's bounded context. Say **seam** or **interface**.
 
-| Rationalization                                                                   | Reality                                                                                                         |
-| :-------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| _"More small files and 5-line classes are always cleaner."_                       | Fragmenting logic creates shallow modules and cognitive indirection. Colocate cohesive logic into deep modules. |
-| _"Expose all knobs so callers have maximum flexibility."_                         | Forcing callers to configure dozens of low-level options leaks complexity. Provide high-leverage defaults.      |
-| _"I will create an interface just in case we need another implementation later."_ | Speculative interfaces add indirection without value. Introduce ports when you have two concrete adapters.      |
+## Going deeper
 
----
-
-## Verification
-
-Architectural design is complete when:
-
-1. Callers can achieve primary use cases using 1-2 intuitive entry points.
-2. Internal changes to storage, third-party libraries, or algorithms cause zero ripple effects on callers.
-3. Automated tests exercise the public interface rather than private internal implementation details.
+- **Deepening a cluster given its dependencies**, see [DEEPENING.md](DEEPENING.md): dependency categories, and replace-don't-layer testing.
+- **Exploring alternative interfaces**, see [DESIGN-IT-TWICE.md](DESIGN-IT-TWICE.md): one `design-explorer` run per design constraint, in parallel, then compare on depth, locality, and seam placement.

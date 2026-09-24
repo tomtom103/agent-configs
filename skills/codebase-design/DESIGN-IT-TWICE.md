@@ -1,34 +1,40 @@
 # Design It Twice
 
-When architecting a critical module, interface, or subsystem boundary, your first idea is almost never your best idea. First ideas are typically shallow adaptations of existing local constraints.
+Your first interface for a module is unlikely to be the best one (Ousterhout). When the user wants to compare
+alternatives, design it several radically different ways at once, each under its own constraint, then compare.
 
-## The Exploration Protocol
+Uses the vocabulary in [SKILL.md](SKILL.md): **module**, **interface**, **seam**, **adapter**, **leverage**.
 
-### 1. Frame the Problem Space
+## 1. Frame the problem space
 
-Before generating interfaces, explicitly articulate:
+Write the user a short explanation of the problem for the chosen module:
 
-- The caller goals and constraints the interface must satisfy.
-- The dependency category (In-Process, Local-Substitutable, Remote-Owned, or True External) per [DEEPENING.md](DEEPENING.md).
-- A concrete usage scenario with realistic inputs and outputs.
+- The constraints any new interface has to satisfy.
+- The dependencies it relies on, and each one's category from [DEEPENING.md](DEEPENING.md).
+- A rough code sketch that makes the constraints concrete: an illustration, not a proposal.
 
-### 2. Formulate Radically Differently Constrained Interfaces
+Show it to the user, then go straight on to step 2. The user reads while the designs are drafted.
 
-Generate at least 2 (preferably 3) contrasting architectural designs:
+## 2. One design per constraint
 
-- **Option A (Minimalist / High-Leverage):** Absolute minimum public surface (1-3 intuitive functions). Maximum internal power hidden behind simple calls. Optimizes for caller ergonomics.
-- **Option B (Extensible / Composable):** Explicit ports and adapters, pluggable pipeline or middleware, highly configurable. Optimizes for future variance and third-party extensions.
-- **Option C (Default-Optimized):** The common 90% use case requires zero configuration, while advanced capabilities are exposed through optional progressive disclosure.
+Dispatch the `design-explorer` agent once per constraint, all in parallel, so no design sees the others:
 
-### 3. Compare Across Concrete Criteria
+1. Minimise the interface: 1–3 entry points, maximum leverage per entry point.
+2. Maximise flexibility: support many use cases and extension.
+3. Optimise for the most common caller: make the default case trivial.
+4. If a dependency is remote or external: design around ports and adapters at those seams.
 
-Evaluate the designs against:
+Every run gets the same technical brief, plus its one constraint. The brief covers the files involved, how they're
+coupled, each dependency's category, and what sits behind the seam. It's separate from the step 1 explanation, which is
+written for the user. Without a `design-explorer` agent, send a general subagent the same brief, and ask it for the
+interface, a call site, what the implementation hides, the dependency strategy, and the trade-offs.
 
-1. **Depth (Leverage):** Ratio of internal power provided to interface complexity imposed on callers.
-2. **Call-Site Simplicity:** How clean and readable is the calling code?
-3. **Information Hiding:** Does the interface leak internal details, vendor types, or database identifiers?
-4. **Blast Radius of Change:** If the internal implementation changes tomorrow, do callers need to change?
+Done when every run has returned a design.
 
-### 4. Provide an Opinionated Recommendation
+## 3. Compare and recommend
 
-Do not present a bland menu of options without guidance. Recommend the best approach (or a synthesized hybrid), clearly stating the trade-offs and rationale.
+Present the designs one at a time so the user can absorb each, then compare them in prose by **depth** (leverage at the
+interface), **locality** (where change concentrates), and **seam placement**.
+
+Finish with your recommendation: the strongest design and why, or a hybrid where parts of different designs combine
+well. The user wants a strong read, not a menu.
