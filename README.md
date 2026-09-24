@@ -119,25 +119,25 @@ description: Prepare release notes, version bumps, and GitHub releases. Use when
 
 ```md
 ---
-description: Reviews changes for correctness and regressions
+description: Summarises the current diff as a pull request description
 mode: subagent
 permissions:
   - { action: edit, resource: "*", effect: deny }
 ---
 
-Review the current changes. List findings in severity order with file and line references.
+Summarise the current diff as a pull request description: what changed, why, and how it was tested.
 ```
 
 **Claude Code agent** — `claude/agents/<id>.md` ([docs](https://docs.anthropic.com/en/docs/claude-code/sub-agents)):
 
 ```md
 ---
-name: reviewer
-description: Reviews changes for correctness and regressions
+name: pr-writer
+description: Summarises the current diff as a pull request description
 disallowedTools: Write, Edit, NotebookEdit
 ---
 
-Review the current changes. List findings in severity order with file and line references.
+Summarise the current diff as a pull request description: what changed, why, and how it was tested.
 ```
 
 **Command** — `commands/<name>.md`, run as `/<name>` in opencode ([docs](https://opencode.ai/v2/docs/commands/))
