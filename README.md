@@ -19,6 +19,7 @@ agent-configs/
 ├── install.sh              # symlinks the repo into harness config dirs
 ├── AGENTS.md               # instructions for agents working on this repo
 ├── CLAUDE.md               # imports AGENTS.md for Claude Code
+├── CONTEXT.md              # domain glossary
 ├── instructions/
 │   └── global.md           # my global instructions, loaded in every session
 ├── skills/                 # portable Agent Skills, shared by every harness
