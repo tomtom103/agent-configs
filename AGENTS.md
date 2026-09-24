@@ -11,7 +11,9 @@ edits here are live everywhere.
 - `opencode/` — opencode-only files, mirroring `~/.config/opencode/`
   - `opencode.jsonc` — server config (models, providers, permissions, MCP)
   - `cli.json` — TUI settings (theme, keybinds, terminal plugins)
-  - `agents/<id>.md`, `plugins/*.ts`
+  - `agents/<id>.md`
+  - `plugins/<id>/` — one folder per plugin; opencode loads its `index.ts` by filename, and its
+    `package.json` holds only dev dependencies and a `check` script
 - `claude/` — Claude Code-only files, mirroring `~/.claude/`
   - `agents/<id>.md` — subagents (frontmatter: `name`, `description`, `tools`/`disallowedTools`)
 - `CLAUDE.md` — imports this file; Claude Code reads `CLAUDE.md`, not `AGENTS.md`

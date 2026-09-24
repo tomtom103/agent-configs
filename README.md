@@ -32,7 +32,7 @@ agent-configs/
 │   ├── opencode.jsonc      # server config: models, providers, permissions, MCP
 │   ├── cli.json            # TUI settings: theme, keybinds, terminal plugins
 │   ├── agents/             # <id>.md
-│   └── plugins/            # *.ts / *.js
+│   └── plugins/            # <id>/index.ts, one folder per plugin, with its own package.json
 └── claude/                 # Claude Code-only files
     └── agents/             # <id>.md
 ```

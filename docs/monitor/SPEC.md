@@ -157,7 +157,7 @@ Invariants:
 - Every monitor has a deadline no later than `maxDeadlineMs` after it starts.
 - Ending a monitor for any reason kills its whole process group: SIGTERM, then SIGKILL after 3 seconds.
 
-`index.ts` default-exports `{ id: "agent-configs.monitor", setup }`, and needs no imports at runtime. `setup`:
+`index.ts` default-exports `{ id: "agent-configs.monitor", setup }`, and needs no package imports at runtime. `setup`:
 
 - registers `monitor` and `monitor_stop` with `options: { codemode: false, permission: "shell" }`. `monitor` takes
   `command`, `description`, and an optional `timeout_ms`, and has no working-directory input: the command runs in its
@@ -168,8 +168,9 @@ Invariants:
 - returns a cleanup function that calls `stopAll`
 
 opencode never installs a local plugin's dependencies, and `@opencode/plugin` doesn't resolve from the plugins folder,
-so the plugin imports its types with `import type` only. opencode reads a plugin folder's entry point from its
-`package.json`, so that file has to name `index.ts` as the entry. The first ticket confirms which field opencode reads.
+so the plugin imports its types with `import type` only. opencode doesn't read a local plugin folder's `package.json`:
+it loads the first of `<folder>/server` and `<folder>/index` that `Bun.resolveSync` resolves, so `index.ts` is the
+entry by its name, and `package.json` holds only the dev dependencies and the `check` script.
 
 ## 6. 3-Tier Boundaries
 
