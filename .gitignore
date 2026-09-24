@@ -1,0 +1,13 @@
+.DS_Store
+*.swp
+*.swo
+
+# machine-local project config for working in this repo (e.g. local proxy routing)
+.opencode/opencode.json
+.opencode/opencode.jsonc
+
+# plugin dependencies
+node_modules/
+
+# backups created by install.sh
+*.bak.*

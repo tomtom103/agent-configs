@@ -1,0 +1,67 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // OpenRouter upstream routing. Per-model options under
+  // provider.openrouter.models.<slug>.options.provider are forwarded as
+  // OpenRouter's `provider` request field.
+  // Docs: https://openrouter.ai/docs/guides/routing/provider-selection
+  "provider": {
+    "openrouter": {
+      "models": {
+        "deepseek/deepseek-v4.1-flash": {
+          "options": {
+            "provider": {
+              // Default: always try the cheapest healthy provider, then the
+              // next cheapest. Tracks promos/pricing changes automatically.
+              "sort": "price",
+              "allow_fallbacks": true
+
+              // ---- Pin one provider instead (uncomment one pair) ----------
+              // Prefer it, still fall back if it is unavailable:
+              // "order": ["gmicloud"],
+              // "allow_fallbacks": true
+              //
+              // "order": ["deepinfra"],
+              // "allow_fallbacks": true
+              //
+              // Strict pin, no fallbacks (requests fail if the provider is down):
+              // "only": ["gmicloud"]
+
+              // ---- Optional guardrails ------------------------------------
+              // "max_price": { "prompt": 0.30, "completion": 1.20 }
+              // "require_parameters": true
+              // "quantizations": ["fp8", "bf16"]
+              // "data_collection": "deny"
+            }
+          }
+        }
+
+        // Add any other OpenRouter model the same way; the key is the exact
+        // slug from openrouter.ai (a `~lab/model-latest` alias also works):
+        // "~deepseek/deepseek-latest": {
+        //   "options": { "provider": { "sort": "price", "allow_fallbacks": true } }
+        // }
+      }
+    }
+  },
+  "mcp": {
+    "servers": {
+      // Playwright driving the system Firefox over WebDriver BiDi (moz-firefox
+      // channel), in a visible window with a dedicated persistent profile:
+      // sign in once there and it stays signed in across sessions and projects.
+      // Only one browser can use the profile at a time.
+      // Pinned to the version tested with Firefox 153; Firefox support is new.
+      // Options: https://github.com/microsoft/playwright-mcp#configuration
+      "playwright": {
+        "type": "local",
+        "command": ["npx", "-y", "@playwright/mcp@0.0.82"],
+        "environment": {
+          "PLAYWRIGHT_MCP_BROWSER": "moz-firefox",
+          "PLAYWRIGHT_MCP_EXECUTABLE_PATH": "/usr/bin/firefox",
+          "PLAYWRIGHT_MCP_USER_DATA_DIR": "{env:HOME}/.local/share/playwright-mcp/firefox",
+          // Keeps auto-named snapshots/screenshots out of the project directory
+          "PLAYWRIGHT_MCP_OUTPUT_DIR": "{env:HOME}/.cache/playwright-mcp"
+        }
+      }
+    }
+  }
+}
