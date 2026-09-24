@@ -1,6 +1,6 @@
 ---
 description: Read-only research into existing code that traces call paths, seams, dependencies, and tests, and returns a short cited brief. Delegate when answering a question means reading widely through the codebase or upstream docs.
-mode: all
+mode: subagent
 permissions:
   - action: edit
     resource: "*"

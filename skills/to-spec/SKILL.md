@@ -1,6 +1,6 @@
 ---
 name: to-spec
-description: Write requirements already agreed in conversation up as a spec, without interviewing again. Use when the user wants a spec or SPEC.md, or asks to write up what was discussed.
+description: Write up requirements already agreed in conversation as a spec, without interviewing again. Use when the user wants a spec or SPEC.md, or asks to write up what was discussed.
 license: MIT
 metadata:
   pack: core

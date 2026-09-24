@@ -2,8 +2,8 @@
 description: Build the next ticket from TICKETS.md test-first, or every ticket with auto
 ---
 
-Build tickets from `TICKETS.md`, or from the issue tracker if `/plan` published them there. Arguments (may be empty):
-$ARGUMENTS
+Build tickets from the `TICKETS.md` that `/plan` wrote, or from the issue tracker if it published them there. If there
+are several and neither the arguments nor the conversation says which, ask. Arguments (may be empty): $ARGUMENTS
 
 - **Empty:** build the next ticket on the frontier (an unticked ticket whose blockers are all ticked), then stop for
   review.
@@ -15,7 +15,8 @@ For each ticket:
 1. Call the skill tool with "tdd" and build the ticket at its seam.
 2. If the ticket changes what a user sees in a browser, call the skill tool with "browser-verify" and check it there.
 3. Run the project's linters, typecheckers, and full test suite.
-4. Tick the ticket off, or close its issue. If you're committing as you go, commit only this ticket's files, in a commit that names it.
+4. Tick the ticket off, or close its issue. If you're committing as you go, commit only this ticket's files, in a
+   commit that names it.
 
 A ticket is done when every acceptance criterion holds and step 3 passes clean.
 

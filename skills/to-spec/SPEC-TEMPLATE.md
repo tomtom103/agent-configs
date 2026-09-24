@@ -36,6 +36,8 @@ Explicit declarations of public types, API endpoints, function signatures, or CL
 
 ## 6. 3-Tier Boundaries
 
+Only rules the conversation settled. An unsettled one goes on the list of decisions presented with the spec.
+
 - **Always Do:** Non-negotiables (invariants, validations, mandatory logging).
 - **Ask First:** Irreversible actions requiring explicit human confirmation.
 - **Never Do:** Prohibited patterns or anti-patterns.

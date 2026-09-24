@@ -21,7 +21,7 @@ See [tests.md](tests.md) for examples and [mocking.md](mocking.md) for mocking g
 
 ## Seams: where tests go
 
-A **seam** is the public boundary you test at: the interface where you observe behavior without reaching inside. Tests live at seams, never against internals.
+A **seam** is where a module's interface lives, and where you test: the place where you observe behavior without reaching inside. Tests live at seams, never against internals.
 
 **Test only at agreed seams.** A seam named in the ticket or spec is already agreed. Otherwise, write down the seams under test and confirm them with the user before writing any test. You can't test everything, so agreeing the seams up front is how testing effort lands on the critical paths and complex logic instead of every edge case.
 

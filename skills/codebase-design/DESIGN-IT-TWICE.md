@@ -26,8 +26,9 @@ Dispatch the `design-explorer` agent once per constraint, all in parallel, so no
 
 Every run gets the same technical brief, plus its one constraint. The brief covers the files involved, how they're
 coupled, each dependency's category, and what sits behind the seam. It's separate from the step 1 explanation, which is
-written for the user. Without a `design-explorer` agent, send a general subagent the same brief, and ask it for the
-interface, a call site, what the implementation hides, the dependency strategy, and the trade-offs.
+written for the user. Without a `design-explorer` agent, send a general subagent the same brief plus the vocabulary from
+[SKILL.md](SKILL.md) and `CONTEXT.md`, and ask it for the interface, a call site, what the implementation hides, the
+dependency strategy, and the trade-offs.
 
 Done when every run has returned a design.
 

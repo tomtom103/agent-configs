@@ -1,6 +1,6 @@
 ---
 description: Designs one interface for a module under a single design constraint, for Design It Twice comparisons. Delegate one run per constraint, in parallel, so no design sees the others.
-mode: all
+mode: subagent
 permissions:
   - action: edit
     resource: "*"
