@@ -66,14 +66,18 @@ check_frontmatter() {
   say "[frontmatter]"
   for f in skills/*/SKILL.md commands/*.md claude/agents/*.md opencode/agents/*.md; do
     [ -f "$f" ] || continue
-    # YAML reads an unquoted value containing ': ' as a nested mapping and rejects the file
+    # YAML reads an unquoted value containing ': ' as a nested mapping and rejects the file.
+    # Keys at any depth count; the text of a | or > block scalar is exempt.
     bad=$(frontmatter "$f" | awk -v q="'" '
-      /^[A-Za-z0-9_-]+:[ \t]/ {
+      block { match($0, /^[ \t]*/); if (RLENGTH > indent || $0 ~ /^[ \t]*$/) next; block = 0 }
+      /^[ \t]*[A-Za-z0-9_.-]+:[ \t]/ {
         v = $0
-        sub(/^[A-Za-z0-9_-]+:[ \t]+/, "", v)
+        sub(/^[ \t]*[A-Za-z0-9_.-]+:[ \t]+/, "", v)
         c = substr(v, 1, 1)
-        if (c != "\"" && c != q && c != "|" && c != ">" && index(v, ": ")) { print; exit }
+        if (c == "|" || c == ">") { match($0, /^[ \t]*/); indent = RLENGTH; block = 1; next }
+        if (c != "\"" && c != q && index(v, ": ")) { print; exit }
       }')
+    bad=$(printf '%s' "$bad" | sed 's/^[ \t]*//')
     [ -z "$bad" ] || error "$f" "unquoted ': ' in '${bad%%:*}'; quote the value or reword it"
   done
 }
@@ -117,6 +121,15 @@ check_skills() {
       m && !/^[ \t]+[A-Za-z0-9_.-]+:[ \t]*[^ \t]/ { print; exit }')
     [ -z "$bad" ] || error "$f" "metadata maps strings to strings, got '$(printf '%s' "$bad" | sed 's/^[ \t]*//')'"
 
+    # A skill copied from upstream pins the commit it was compared against, and ships the upstream license
+    fm=$(frontmatter "$f")
+    if printf '%s\n' "$fm" | grep -q '^[ \t][ \t]*source:'; then
+      printf '%s\n' "$fm" | grep -q '^[ \t][ \t]*source-commit:' ||
+        error "$f" "metadata has 'source' but no 'source-commit'; pin the upstream commit"
+      [ -f "skills/$id/LICENSE" ] ||
+        error "$f" "copied from upstream but skills/$id/LICENSE is missing; copy the upstream license"
+    fi
+
     lines=$(wc -l < "$f" | tr -d ' ')
     [ "$lines" -le "$MAX_SKILL_LINES" ] ||
       warn "$f" "$lines lines (over $MAX_SKILL_LINES); disclose reference that only some branches need"
@@ -155,6 +168,15 @@ check_harness_names() {
   say "[harness tool names]"
   each_hit error "names a tool only one harness provides; describe the capability instead" \
     "$(grep -rnE "$HARNESS_TOOLS" skills commands instructions || true)"
+  # Agent frontmatter may list harness tools (tools, disallowedTools); agent bodies are shared and may not
+  for f in claude/agents/*.md opencode/agents/*.md; do
+    [ -f "$f" ] || continue
+    each_hit error "agent body names a tool only one harness provides; describe the capability instead" \
+      "$(awk -v re="$HARNESS_TOOLS" -v f="$f" '
+        NR == 1 && $0 == "---" { fm = 1; next }
+        fm { if ($0 == "---") fm = 0; next }
+        $0 ~ re { print f ":" FNR ":" $0 }' "$f")"
+  done
 }
 
 check_markdown() {
