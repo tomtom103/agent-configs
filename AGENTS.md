@@ -16,6 +16,8 @@ edits here are live everywhere.
   - `agents/<id>.md` — subagents (frontmatter: `name`, `description`, `tools`/`disallowedTools`)
 - `CLAUDE.md` — imports this file; Claude Code reads `CLAUDE.md`, not `AGENTS.md`
 - `install.sh` — one `harness_<name>` function per harness, each a list of `link SRC DST` calls
+- `docs/` — design notes; `docs/writing-skills.md` is how skills, commands, and agents are written
+- `scripts/lint-skills.sh` — mechanical checks for skills, commands, and agents
 
 ## Commands
 ```sh
@@ -23,19 +25,24 @@ edits here are live everywhere.
 ./install.sh              # link every harness (or: ./install.sh opencode claude)
 ./install.sh --check      # report link status; exit 1 on missing/drifted links
 ./install.sh --force      # back up and replace targets that differ from the repo
+scripts/lint-skills.sh    # frontmatter, agent-copy parity, harness tool names, links
 ```
 
 ## Rules
 - Put anything that works across harnesses at the top level (`skills/`, `instructions/`);
   harness-specific formats go under that harness's directory
-- Skills must stay portable: directory name is the ID (`^[a-z0-9]+(-[a-z0-9]+)*$`, ≤64 chars),
-  frontmatter `name` equals the directory name, and `description` says when to use it.
-  Reference supporting files with paths relative to `SKILL.md`, and don't name tools that
-  only one harness or plugin provides
+- Skills must stay portable: reference supporting files with paths relative to `SKILL.md`, and
+  describe a capability ("whichever browser automation this session provides") rather than naming
+  a tool only one harness or plugin provides
 - Shared commands may only use frontmatter both harnesses understand (`description`); a command
   needing `agent`, `model`, or `allowed-tools` goes under that harness's directory instead
 - Agents exist once per harness (`opencode/agents/`, `claude/agents/`) because their frontmatter
-  differs; when editing an agent's prompt, update both copies
+  differs; the two copies share one body
+- Run `/review-skill` on any change to `skills/`, `commands/`, or an agent, and use its revision
+  note as the commit body. Before committing, run `scripts/lint-skills.sh` and fix what it reports
+  in the files you touched
+- `skills/writing-for-agents/SKILL.md` is vendored: its body stays as upstream wrote it, updated by
+  diffing against the commit in its `metadata`. This repo's mechanics live in its `SKILL-MECHANICS.md`
 - Claude Code: `~/.claude/skills` also holds Claude-managed skills, so `install.sh` links each skill
   individually — rerun it after adding a skill, and delete the stale link after removing one
 - Only the repo root may contain a file named `AGENTS.md` — opencode loads any `AGENTS.md` it

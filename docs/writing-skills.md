@@ -85,53 +85,30 @@ this repo:
 | Feedback from real use | A trial run per skill, plus `skill-creator` evals when a skill matters | Per skill |
 | Machine checks | `scripts/lint-skills.sh` | Runs before each commit |
 
-### 1. Vendoring `writing-for-agents`
+### 1. `writing-for-agents`, vendored
 
-- Copy `skills/productivity/writing-for-agents/SKILL.md` from upstream commit
-  `c55ee46073ed923f86ce59a5eb3b6d895095d1b7` (2026-09-18) unchanged. Add `license: MIT` and, under `metadata`, the
-  source URL and that SHA. To update it, diff against upstream and pull the changes into this one directory.
-- Write our own `SKILL-MECHANICS.md`. The vendored `SKILL.md` promises that file covers frontmatter, the invocation
-  choice, and router skills, so ours must cover the same three topics:
-  - **Frontmatter:** only the [spec](https://agentskills.io/specification) fields. Custom keys go under `metadata`.
-  - **Invocation:** skills are the model-invoked layer. Anything only a user should trigger is a command, which stays
-    thin: it says which skills to call, in what order, and what the done-condition is. Agents are a role plus
-    permissions, and their body calls skills. (Claude Code can also preload skills through an agent's `skills:` frontmatter
-    field.) Once agent bodies stop mentioning harness tools, the Claude Code and opencode copies differ only in
-    frontmatter.
-  - **Calling other skills:** write `Call the skill tool with "<name>"`, one call per skill. Both harnesses expose a
-    skill tool, and naming the tool makes the call fire more reliably than a bare skill name does.
-  - **Routers:** the commands in `commands/` (`/define`, `/plan`, `/build`) are the router layer. When one of them
-    restates a skill, replace the restatement with a call to that skill.
-- Don't add a pointer to AGENTS.md unless a trial run shows the description failing to fire.
+[`skills/writing-for-agents/SKILL.md`](../skills/writing-for-agents/SKILL.md) is upstream's file with the body
+unchanged. Its `metadata` records the source URL and commit (`c55ee46`, 2026-09-18). To update it, diff against
+upstream and pull the change into that one directory.
+
+Upstream's `SKILL-MECHANICS.md` is replaced by [ours](../skills/writing-for-agents/SKILL-MECHANICS.md). The vendored
+file promises that its mechanics file covers frontmatter, the invocation choice, and routers. Ours covers those for
+this repo's three layers: skills (model-invoked), commands (user-invoked, and the router layer), and agents (a role
+plus permissions, one body shared by both harnesses).
+
+There's no AGENTS.md pointer to the reference, because its description should fire on its own. Add one only if a
+trial run shows it failing to.
 
 ### 2. `/review-skill`
 
-The command names the process it runs, not the output it produces. The source learned that concision commands named
-after their output (`/tldr`, `/no-fluff`) make the model clip words instead of cutting whole sentences.
+[`commands/review-skill.md`](../commands/review-skill.md) applies the reference as seven ordered passes. It ends on a
+done-condition and prints a revision note. Its shape is deliberate:
 
-```md
----
-description: Review a skill, command, or agent against writing-for-agents
----
-
-Call the skill tool with "writing-for-agents", then review $ARGUMENTS in this order, finishing each pass
-before starting the next:
-
-1. **Pointer.** The description names the job, then one trigger per distinct situation, in words a user types.
-2. **Delete.** Run the no-op test on every sentence. Delete each sentence that fails, whole.
-3. **Dedupe.** Anything another skill, command, or agent already states becomes a call to that skill.
-4. **Collapse.** Replace each restated idea with a leading word, defined once.
-5. **Positive.** Rewrite each prohibition as the target behaviour; keep only guards on irreversible actions.
-6. **Criteria.** Every step ends on a criterion an agent could not claim without doing the work.
-7. **Ladder.** Keep what every run needs; move what only some branches need into a sibling file.
-
-Done when every remaining sentence survives the no-op test and you can name the file's leading word.
-Output a revision note (Observed / Failure mode / Lever) for the commit message, then propose one real
-task to trial the result on.
-```
-
-Deletion is the second pass so that later passes don't polish lines that are about to be cut. Each pass names a lever
-the reference defines rather than explaining it, so the command doesn't become a second copy of the reference.
+- The name is the process, not the output. Upstream found that concision commands named after their output (`/tldr`,
+  `/no-fluff`) make the model clip words instead of cutting whole sentences.
+- Deletion is the second pass, so that later passes don't polish lines that are about to be cut.
+- Each pass names a lever the reference defines rather than explaining it, so the command doesn't become a second copy
+  of the reference.
 
 ### 3. Revision notes
 
@@ -143,16 +120,15 @@ Failure mode: duplication, negation.
 Lever: delete; the RED step already carries the rule and its reason.
 ```
 
-Add a rule to AGENTS.md: *"Run `/review-skill` on any change to `skills/`, `commands/`, or an agent, and use its revision
-note as the commit body."* AGENTS.md is loaded only when working in this repo, so the rule costs nothing anywhere else.
+AGENTS.md requires `/review-skill` on any change to `skills/`, `commands/`, or an agent, with its revision note as the
+commit body. AGENTS.md is loaded only when working in this repo, so the rule costs nothing anywhere else.
 
 ### 4. `scripts/lint-skills.sh`
 
-- Frontmatter keys are spec fields, `name` matches the directory, and the description is at most 1024 characters.
-- Relative links resolve, and there are no escaped code fences.
-- No harness-specific tool names (`WebFetch`, `run_in_background`, `mcp__`) outside `claude/` and `opencode/`.
-- Command frontmatter holds only `description`.
-- A warning, not a failure, when a `SKILL.md` goes over 150 lines.
+[The script](../scripts/lint-skills.sh) checks skill frontmatter against the spec, keeps shared commands to
+`description`, requires each agent's two copies to share one body, and catches harness tool names outside `claude/` and
+`opencode/`, broken relative links, and escaped code fences. A `SKILL.md` over 150 lines gets a warning, not an error.
+The script itself is the full list of checks.
 
 When the same review comment comes up twice, ask whether the rule behind it is mechanical. If it is, turn it into a
 lint check instead of adding another sentence of guidance.
@@ -205,18 +181,32 @@ the reason.
 
 ## Rollout
 
-1. **Infrastructure:** vendor `writing-for-agents` with our `SKILL-MECHANICS.md`, add `/review-skill`,
-   `scripts/lint-skills.sh`, and the AGENTS.md rule. Make the repo's first commit, so revision notes have a baseline.
-2. **Commands and agents:** make them thin callers of skills. This removes the extra copies of the TDD loop, the second
-   plan template, and the third copy of the spec outline.
+1. **Infrastructure.** Done: the vendored reference with our `SKILL-MECHANICS.md`, `/review-skill`,
+   `scripts/lint-skills.sh`, the AGENTS.md rules, and a baseline commit.
+2. **Commands, agents, and the workflow's vocabulary, in one change.** `tasks/plan.md`, `SPEC.md`, and *task* versus
+   *ticket* are hard-coded across `to-spec`, `to-tickets`, `TICKET-TEMPLATE.md`, `/define`, `/plan`, and `/build`.
+   Settling them while the commands are being rewritten keeps the chain working at every commit.
+   - Commands become thin callers of skills. That removes the extra copies of the TDD loop, the second plan template,
+     the third copy of the spec outline, and the second question cap (in `/define`).
+   - Use *ticket* throughout, matching the skill name and the vendored reference. Keep one plan file, because `/build`
+     works through tickets one at a time and ticks each off there. Replace "human architect" with "the user".
+   - Agent bodies call skills and name no harness tool, so each pair shares one body. Claude Code copies may also
+     preload skills through `skills:` frontmatter. Agent descriptions say when to delegate, the way a skill's
+     description says when to fire. `craftsman` and `/build` call `browser-verify` instead of restating a browser check.
+   - Each skill ends on its own completion criterion. The routing lines in `to-tickets` (to `/build`) and `grilling`
+     (to `to-spec`) move into the commands, since a skill running inside an agent has no command to route to.
 3. **`codebase-design`:** restore the glossary, the `_Avoid_` lists, and "Use these terms exactly". Cut the exposition.
+   Design It Twice gives each design constraint its own `design-explorer` run, in parallel, so no design sees the
+   others. `codebase-researcher` calls this skill for the dependency categories instead of restating them.
 4. **`grilling`, `tdd`, `ADR-FORMAT.md`:** bring them back toward the source, removing the question cap and fixing the
-   escaped fences.
-5. **Vocabulary:** use *ticket*, matching the skill name and the vendored reference, in the body and the output path.
-   Replace "human architect" with "the user".
-6. **Frontmatter:** move `pack`, `attribution`, and `references` under `metadata`. `references` can go entirely, since
+   escaped fences. Three departures from upstream:
+   - `tdd` keeps REFACTOR. Upstream moved it into a `code-review` skill, which this repo doesn't have.
+   - `tdd`'s description narrows to test-first work, red-green-refactor, and bugs with a reproduction. `/build` and
+     `craftsman` call it directly, so the broad trigger only made it fire where nobody asked for test-first.
+   - `grilling`'s description leads with *grill*, the word a user types.
+5. **Frontmatter:** move `pack`, `attribution`, and `references` under `metadata`. `references` can go entirely, since
    the body already links its sibling files.
-7. **`browser-verify`:** run it on a real task, then decide whether "close the tabs you opened" and "wait on conditions"
+6. **`browser-verify`:** run it on a real task, then decide whether "close the tabs you opened" and "wait on conditions"
    change the agent's behaviour.
 
 Each rewrite goes through `/review-skill`, one trial run, and a commit with a revision note.

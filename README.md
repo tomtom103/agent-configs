@@ -24,6 +24,9 @@ agent-configs/
 ├── skills/                 # portable Agent Skills, shared by every harness
 │   └── <id>/SKILL.md
 ├── commands/               # <name>.md → /<name>, shared by opencode and Claude Code
+├── docs/                   # design notes, e.g. writing-skills.md
+├── scripts/
+│   └── lint-skills.sh      # mechanical checks for skills, commands, and agents
 ├── opencode/               # opencode-only files
 │   ├── opencode.jsonc      # server config: models, providers, permissions, MCP
 │   ├── cli.json            # TUI settings: theme, keybinds, terminal plugins
@@ -95,6 +98,9 @@ which can't be symlinked, and the Firefox profile allows only one browser at a t
 `opencode mcp add --global` and similar CLI commands write through the symlink into the repo.
 
 ## Adding things
+
+Write skills, commands, and agents the way [docs/writing-skills.md](docs/writing-skills.md) describes, run
+`/review-skill` on the result, and run `scripts/lint-skills.sh` before committing.
 
 **Skill** — `skills/<id>/SKILL.md`, portable across harnesses:
 
